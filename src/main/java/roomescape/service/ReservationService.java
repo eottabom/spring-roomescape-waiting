@@ -9,7 +9,7 @@ import roomescape.domain.LoginMember;
 import roomescape.domain.Reservation;
 import roomescape.exception.ErrorCode;
 import roomescape.exception.RoomEscapeException;
-import roomescape.repository.ReservationRepository;
+import roomescape.repository.ReservationJpaRepository;
 import roomescape.web.controller.dto.CreateReservationRequest;
 import roomescape.web.controller.dto.ReservationAdminRequest;
 import roomescape.web.controller.dto.ReservationRequest;
@@ -17,11 +17,12 @@ import roomescape.web.controller.dto.ReservationResponse;
 import roomescape.web.controller.dto.ReservationSearchRequest;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ReservationService {
 
-	private final ReservationRepository reservationRepository;
+	private final ReservationJpaRepository reservationJpaRepository;
 
 	private final ReservationTimeService reservationTimeService;
 
@@ -29,18 +30,20 @@ public class ReservationService {
 
 	private final MemberService memberService;
 
-	ReservationService(ReservationRepository reservationRepository, ReservationTimeService reservationTimeService,
+	ReservationService(ReservationJpaRepository reservationJpaRepository, ReservationTimeService reservationTimeService,
 			ThemeService themeService, MemberService memberService) {
-		this.reservationRepository = reservationRepository;
+		this.reservationJpaRepository = reservationJpaRepository;
 		this.reservationTimeService = reservationTimeService;
 		this.themeService = themeService;
 		this.memberService = memberService;
 	}
 
+	@Transactional(readOnly = true)
 	public List<ReservationResponse> getReservations() {
-		return this.reservationRepository.findAll().stream().map(ReservationResponse::from).toList();
+		return this.reservationJpaRepository.findAll().stream().map(ReservationResponse::from).toList();
 	}
 
+	@Transactional
 	public ReservationResponse create(ReservationRequest request, LoginMember loginMember) {
 		var createReservationRequest = CreateReservationRequest.builder()
 			.date(request.date())
@@ -51,6 +54,7 @@ public class ReservationService {
 		return createReservation(createReservationRequest);
 	}
 
+	@Transactional
 	public ReservationResponse createByAdmin(ReservationAdminRequest request) {
 		var foundMember = this.memberService.findById(request.memberId());
 		var createReservationRequest = CreateReservationRequest.builder()
@@ -62,12 +66,13 @@ public class ReservationService {
 		return createReservation(createReservationRequest);
 	}
 
+	@Transactional
 	public void cancel(long id) {
-		var isExist = this.reservationRepository.isExistId(id);
+		var isExist = this.reservationJpaRepository.existsById(id);
 		if (!isExist) {
 			throw new RoomEscapeException(ErrorCode.NOT_FOUND_RESERVATION);
 		}
-		this.reservationRepository.delete(id);
+		this.reservationJpaRepository.deleteById(id);
 	}
 
 	private ReservationResponse createReservation(CreateReservationRequest createReservationRequest) {
@@ -84,7 +89,7 @@ public class ReservationService {
 			.time(reservationTime)
 			.theme(theme)
 			.build();
-		var savedReservation = this.reservationRepository.save(reservation);
+		var savedReservation = this.reservationJpaRepository.save(reservation);
 		return ReservationResponse.from(savedReservation, reservationTime, theme);
 	}
 
@@ -96,13 +101,14 @@ public class ReservationService {
 			throw new RoomEscapeException(ErrorCode.PAST_RESERVATION);
 		}
 
-		if (this.reservationRepository.isDuplicateReservation(date, themeId)) {
+		if (this.reservationJpaRepository.isDuplicateReservation(date, themeId)) {
 			throw new RoomEscapeException(ErrorCode.DUPLICATE_RESERVATION);
 		}
 	}
 
+	@Transactional(readOnly = true)
 	public List<ReservationResponse> searchReservations(ReservationSearchRequest request) {
-		return ReservationResponse.from(this.reservationRepository.findReservations(request.memberId(),
+		return ReservationResponse.from(this.reservationJpaRepository.findReservations(request.memberId(),
 				request.themeId(), request.dateFrom(), request.dateTo()));
 	}
 
