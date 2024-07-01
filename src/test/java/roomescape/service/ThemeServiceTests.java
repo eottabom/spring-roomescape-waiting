@@ -2,6 +2,7 @@ package roomescape.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,11 +10,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import roomescape.repository.ThemeJpaRepository;
 import roomescape.web.controller.dto.ThemeRequest;
 import roomescape.domain.Theme;
 import roomescape.exception.ErrorCode;
 import roomescape.exception.RoomEscapeException;
-import roomescape.repository.ThemeRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -26,7 +27,7 @@ class ThemeServiceTests {
 	private ThemeService themeService;
 
 	@Mock
-	private ThemeRepository themeRepository;
+	private ThemeJpaRepository themeJpaRepository;
 
 	@BeforeEach
 	void setUp() {
@@ -42,7 +43,7 @@ class ThemeServiceTests {
 
 		themes.add(theme);
 
-		given(this.themeRepository.findAll()).willReturn(themes);
+		given(this.themeJpaRepository.findAll()).willReturn(themes);
 
 		// when
 		var resultThemes = this.themeService.getThemes();
@@ -64,8 +65,8 @@ class ThemeServiceTests {
 		Theme theme = Theme.builder().name("테마1").description("첫번째테마").thumbnail("썸네일이미지").build();
 		ThemeRequest request = new ThemeRequest("테마1", "첫번째테마", "썸네일이미지");
 
-		given(this.themeRepository.isExistName(request.name())).willReturn(false);
-		given(this.themeRepository.save(theme)).willAnswer((invocationOnMock) -> {
+		given(this.themeJpaRepository.existsByName(request.name())).willReturn(false);
+		given(this.themeJpaRepository.save(theme)).willAnswer((invocationOnMock) -> {
 			Theme savedTheme = invocationOnMock.getArgument(0);
 			savedTheme.setId(1L);
 			return savedTheme;
@@ -99,7 +100,7 @@ class ThemeServiceTests {
 		// given
 		Theme theme = Theme.builder().id(1L).name("테마1").description("첫번째테마").thumbnail("썸네일이미지").build();
 
-		given(this.themeRepository.findById(anyLong())).willReturn(theme);
+		given(this.themeJpaRepository.findById(anyLong())).willReturn(Optional.ofNullable(theme));
 
 		// when
 		var resultThemeById = this.themeService.getThemeById(1L);
@@ -120,7 +121,7 @@ class ThemeServiceTests {
 		// given
 		ThemeRequest request = new ThemeRequest("테마1", "첫번째테마", "썸네일이미지");
 
-		given(this.themeRepository.isExistName(request.name())).willReturn(true);
+		given(this.themeJpaRepository.existsByName(request.name())).willReturn(true);
 
 		// when, then
 		assertThatThrownBy(() -> this.themeService.create(request)).isInstanceOf(RoomEscapeException.class)

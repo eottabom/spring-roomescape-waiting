@@ -3,6 +3,7 @@ package roomescape.service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,11 +11,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import roomescape.repository.ReservationTimeJpaRepository;
 import roomescape.web.controller.dto.ReservationTimeRequest;
 import roomescape.domain.ReservationTime;
 import roomescape.exception.ErrorCode;
 import roomescape.exception.RoomEscapeException;
-import roomescape.repository.ReservationTimeRepository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -29,7 +30,7 @@ class ReservationTimeTests {
 	private ReservationTimeService reservationTimeService;
 
 	@Mock
-	private ReservationTimeRepository reservationTimeRepository;
+	private ReservationTimeJpaRepository reservationTimeJpaRepository;
 
 	@BeforeEach
 	void setUp() {
@@ -41,7 +42,7 @@ class ReservationTimeTests {
 		// given
 		ReservationTime reservationTime = ReservationTime.builder().startAt("10:00").build();
 
-		given(this.reservationTimeRepository.save(reservationTime)).willAnswer((invocationOnMock) -> {
+		given(this.reservationTimeJpaRepository.save(reservationTime)).willAnswer((invocationOnMock) -> {
 			ReservationTime savedreservationTime = invocationOnMock.getArgument(0);
 			savedreservationTime.setId(1L);
 			return savedreservationTime;
@@ -71,7 +72,7 @@ class ReservationTimeTests {
 
 		reservationTimes.add(reservationTime);
 
-		given(this.reservationTimeRepository.findAll()).willReturn(reservationTimes);
+		given(this.reservationTimeJpaRepository.findAll()).willReturn(reservationTimes);
 
 		// when
 		var resultReservationTimes = this.reservationTimeService.getReservationTimes();
@@ -100,7 +101,7 @@ class ReservationTimeTests {
 		// given
 		ReservationTime reservationTime = ReservationTime.builder().id(1L).startAt("10:00").build();
 
-		given(this.reservationTimeRepository.findById(anyLong())).willReturn(reservationTime);
+		given(this.reservationTimeJpaRepository.findById(anyLong())).willReturn(Optional.ofNullable(reservationTime));
 
 		// when
 		var resultReservationTimeById = this.reservationTimeService.getReservationTimeById(1L);
@@ -125,10 +126,10 @@ class ReservationTimeTests {
 				ReservationTime.builder().id(1L).startAt("10:00").build(),
 				ReservationTime.builder().id(2L).startAt("11:00").build(),
 				ReservationTime.builder().id(3L).startAt("12:00").build());
-		given(this.reservationTimeRepository.findAll()).willReturn(reservationTimes);
+		given(this.reservationTimeJpaRepository.findAll()).willReturn(reservationTimes);
 
 		List<Long> reservedTimeIds = Arrays.asList(1L, 3L);
-		given(this.reservationTimeRepository.findReservedTimeIds(anyString(), eq(themeId))).willReturn(reservedTimeIds);
+		given(this.reservationTimeJpaRepository.findReservedTimeIds(anyString(), eq(themeId))).willReturn(reservedTimeIds);
 
 		// when
 		var availableTimes = this.reservationTimeService.getAvailableReservationTimes(date, themeId);

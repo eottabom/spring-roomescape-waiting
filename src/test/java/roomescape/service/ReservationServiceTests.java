@@ -3,6 +3,7 @@ package roomescape.service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,8 +19,8 @@ import roomescape.domain.ReservationTime;
 import roomescape.domain.Theme;
 import roomescape.exception.ErrorCode;
 import roomescape.exception.RoomEscapeException;
-import roomescape.repository.ReservationRepository;
-import roomescape.repository.ReservationTimeRepository;
+import roomescape.repository.ReservationJpaRepository;
+import roomescape.repository.ReservationTimeJpaRepository;
 import roomescape.web.controller.dto.ReservationAdminRequest;
 import roomescape.web.controller.dto.ReservationRequest;
 import roomescape.web.controller.dto.ReservationResponse;
@@ -47,10 +48,10 @@ class ReservationServiceTests {
 	private MemberService memberService;
 
 	@Mock
-	private ReservationRepository reservationRepository;
+	private ReservationJpaRepository reservationJpaRepository;
 
 	@Mock
-	private ReservationTimeRepository reservationTimeRepository;
+	private ReservationTimeJpaRepository reservationTimeJpaRepository;
 
 	@BeforeEach
 	void setUp() {
@@ -74,7 +75,7 @@ class ReservationServiceTests {
 			.build();
 		reservations.add(reservation);
 
-		given(this.reservationRepository.findAll()).willReturn(reservations);
+		given(this.reservationJpaRepository.findAll()).willReturn(reservations);
 
 		// when
 		var resultReservations = this.reservationService.getReservations();
@@ -114,8 +115,8 @@ class ReservationServiceTests {
 
 		given(this.themeService.getThemeById(1L)).willReturn(theme);
 		given(this.reservationTimeService.getReservationTimeById(1L)).willReturn(reservationTime);
-		given(this.reservationTimeRepository.findById(1L)).willReturn(reservationTime);
-		given(this.reservationRepository.save(any(Reservation.class))).willReturn(reservation);
+		given(this.reservationTimeJpaRepository.findById(1L)).willReturn(Optional.ofNullable(reservationTime));
+		given(this.reservationJpaRepository.save(any(Reservation.class))).willReturn(reservation);
 
 		var loginMember = LoginMember.builder()
 			.name("tester")
@@ -143,9 +144,10 @@ class ReservationServiceTests {
 
 	@Test
 	void createReservationByAdmin() {
-		// given
 
-		ReservationAdminRequest request = new ReservationAdminRequest("예약자이름", "2024-06-30", 1L, 1L, 1L);
+		// given
+		ReservationAdminRequest request = new ReservationAdminRequest("예약자이름",
+				DataTimeFormatterUtils.getFormattedTomorrowDate(), 1L, 1L, 1L);
 
 		var member = Member.builder().id(1L).name("예약자이름").email("admin@nextstep.com").role("ADMIN").build();
 
@@ -156,7 +158,7 @@ class ReservationServiceTests {
 		given(this.memberService.findById(1L)).willReturn(member);
 		given(this.reservationTimeService.getReservationTimeById(1L)).willReturn(reservationTime);
 		given(this.themeService.getThemeById(1L)).willReturn(theme);
-		given(this.reservationRepository.save(any())).willAnswer((invocation) -> {
+		given(this.reservationJpaRepository.save(any())).willAnswer((invocation) -> {
 			Reservation reservation = invocation.getArgument(0);
 			reservation.setId(1L);
 			return reservation;
@@ -168,7 +170,7 @@ class ReservationServiceTests {
 		// then
 		assertThat(createdReservation).isNotNull();
 		assertThat(createdReservation.name()).isEqualTo("예약자이름");
-		assertThat(createdReservation.date()).isEqualTo("2024-06-30");
+		assertThat(createdReservation.date()).isEqualTo(DataTimeFormatterUtils.getFormattedTomorrowDate());
 		assertThat(createdReservation.time().id()).isEqualTo(1L);
 		assertThat(createdReservation.theme().id()).isEqualTo(1L);
 	}
@@ -205,7 +207,7 @@ class ReservationServiceTests {
 		List<Reservation> reservations = List.of(reservation);
 
 		ReservationSearchRequest request = new ReservationSearchRequest(memberId, themeId, dateFrom, dateTo);
-		given(this.reservationRepository.findReservations(anyLong(), anyLong(), anyString(), anyString()))
+		given(this.reservationJpaRepository.findReservations(anyLong(), anyLong(), anyString(), anyString()))
 			.willReturn(reservations);
 
 		// when
@@ -231,8 +233,8 @@ class ReservationServiceTests {
 
 		ReservationSearchRequest request = new ReservationSearchRequest(memberId, themeId, dateFrom, dateTo);
 
-		given(this.reservationRepository.findReservations(anyLong(), anyLong(), anyString(), anyString()))
-				.willReturn(Collections.emptyList());
+		given(this.reservationJpaRepository.findReservations(anyLong(), anyLong(), anyString(), anyString()))
+			.willReturn(Collections.emptyList());
 
 		// when
 		List<ReservationResponse> searchReservations = this.reservationService.searchReservations(request);

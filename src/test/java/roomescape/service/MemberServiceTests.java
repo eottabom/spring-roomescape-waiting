@@ -1,5 +1,7 @@
 package roomescape.service;
 
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -9,7 +11,7 @@ import roomescape.domain.Member;
 import roomescape.domain.MemberRole;
 import roomescape.exception.ErrorCode;
 import roomescape.exception.RoomEscapeException;
-import roomescape.repository.MemberRepository;
+import roomescape.repository.MemberJpaRepository;
 import roomescape.web.controller.dto.LoginRequest;
 import roomescape.web.controller.dto.MemberRequest;
 import roomescape.web.controller.dto.MemberResponse;
@@ -27,7 +29,7 @@ class MemberServiceTests {
 	private MemberService memberService;
 
 	@Mock
-	private MemberRepository memberRepository;
+	private MemberJpaRepository memberJpaRepository;
 
 	@Mock
 	private PasswordEncoder passwordEncoder;
@@ -51,8 +53,8 @@ class MemberServiceTests {
 
 		MemberResponse memberResponse = new MemberResponse(1L, "이름", "tester@gmail.com", MemberRole.USER.name());
 
-		given(this.memberRepository.isExists(memberRequest.name())).willReturn(false);
-		given(this.memberRepository.save(any(Member.class))).willReturn(member);
+		given(this.memberJpaRepository.existsByName(memberRequest.name())).willReturn(false);
+		given(this.memberJpaRepository.save(any(Member.class))).willReturn(member);
 
 		// when
 		var createdMember = this.memberService.create(memberRequest);
@@ -70,7 +72,7 @@ class MemberServiceTests {
 		// given
 		MemberRequest memberRequest = new MemberRequest("이름", "tester@gmail.com", "1234");
 
-		given(this.memberRepository.isExists(memberRequest.name())).willReturn(true);
+		given(this.memberJpaRepository.existsByName(memberRequest.name())).willReturn(true);
 
 		// when, then
 		assertThatThrownBy(() -> this.memberService.create(memberRequest)).isInstanceOf(RoomEscapeException.class)
@@ -91,7 +93,7 @@ class MemberServiceTests {
 		MemberResponse memberResponse = new MemberResponse(1L, "이름", "tester@gmail.com", MemberRole.USER.name());
 
 		given(this.passwordEncoder.matches(loginRequest.password(), member.getPassword())).willReturn(true);
-		given(this.memberRepository.findByEmail(loginRequest.email())).willReturn(member);
+		given(this.memberJpaRepository.findByEmail(loginRequest.email())).willReturn(Optional.of(member));
 
 		// when
 		MemberResponse actualResponse = this.memberService.findMemberByLoginRequest(loginRequest);
@@ -105,7 +107,7 @@ class MemberServiceTests {
 		// given
 		LoginRequest loginRequest = new LoginRequest("tester@gmail.com", this.passwordEncoder.encode("1234"));
 
-		given(this.memberRepository.findByEmail(loginRequest.email())).willReturn(null);
+		given(this.memberJpaRepository.findByEmail(loginRequest.email())).willReturn(Optional.empty());
 
 		// when, then
 		assertThatThrownBy(() -> this.memberService.findMemberByLoginRequest(loginRequest))
@@ -125,7 +127,7 @@ class MemberServiceTests {
 			.role(MemberRole.USER.name())
 			.build();
 
-		given(this.memberRepository.findByEmail(loginRequest.email())).willReturn(member);
+		given(this.memberJpaRepository.findByEmail(loginRequest.email())).willReturn(Optional.ofNullable(member));
 
 		// when, then
 		assertThatThrownBy(() -> this.memberService.findMemberByLoginRequest(loginRequest))
