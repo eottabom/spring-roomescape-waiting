@@ -1,5 +1,7 @@
 package roomescape.domain;
 
+import java.util.Arrays;
+
 public enum ReservationStatus {
 
 	RESERVATION("예약"), WAITING("예약 대기");
@@ -15,12 +17,11 @@ public enum ReservationStatus {
 	}
 
 	public static String fromStatus(String savedValue) {
-		for (ReservationStatus status : values()) {
-			if (status.name().equals(savedValue)) {
-				return status.getStatus();
-			}
-		}
-		throw new IllegalArgumentException("Unknown value: " + savedValue);
+		return Arrays.stream(values())
+			.filter((status) -> status.name().equals(savedValue))
+			.findFirst()
+			.map(ReservationStatus::getStatus)
+			.orElseThrow(() -> new IllegalArgumentException("Unknown value: " + savedValue));
 	}
 
 }
