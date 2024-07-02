@@ -106,26 +106,19 @@ public abstract class AbstractRepositoryTests {
 		return ReservationTime.builder().id(id).startAt(startAt).build();
 	}
 
-	void createReservationsWithReservationTime(int createCount) {
-		for (int i = 1; i <= createCount; i++) {
-			String startTime = calculateStartTime("10:00", i);
+	void createReservationsWithReservationTime(Long reservationTimeId, String startAt) {
 
-			ReservationTime reservationTime = generateReservationTime((long) i, startTime);
-			var savedReservationTime = this.reservationTimeJpaRepository.save(reservationTime);
+		ReservationTime reservationTime = generateReservationTime(reservationTimeId, startAt);
+		var savedReservationTime = this.reservationTimeJpaRepository.save(reservationTime);
 
-			assertReservationTime(savedReservationTime, startTime);
+		assertReservationTime(savedReservationTime, startAt);
 
-			Theme foundTheme = this.themeJpaRepository.findById(1L).orElseThrow();
-			assertFoundTheme(foundTheme);
+		Theme foundTheme = this.themeJpaRepository.findById(1L).orElseThrow();
+		assertFoundTheme(foundTheme);
 
-			createAndSaveReservation(foundTheme, savedReservationTime);
-		}
+		createAndSaveReservation(foundTheme, savedReservationTime);
 	}
 
-	private String calculateStartTime(String baseTime, int minutesToAdd) {
-		LocalTime startTime = LocalTime.parse(baseTime).plusMinutes(minutesToAdd);
-		return startTime.format(DateTimeFormatter.ofPattern("HH:mm"));
-	}
 
 	private void assertReservationTime(ReservationTime savedReservationTime, String expectedStartTime) {
 		assertThat(savedReservationTime).isNotNull();
