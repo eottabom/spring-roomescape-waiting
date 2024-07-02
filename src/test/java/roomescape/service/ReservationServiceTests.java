@@ -99,8 +99,7 @@ class ReservationServiceTests {
 	@Test
 	void createReservation() {
 		// given
-		ReservationRequest request = new ReservationRequest("tester", DataTimeFormatterUtils.getFormattedTomorrowDate(),
-				1L, 1L);
+		ReservationRequest request = new ReservationRequest("tester", DataTimeFormatterUtils.TOMORROW_DATE, 1L, 1L);
 
 		ReservationTime reservationTime = ReservationTime.builder().id(1L).startAt("10:00").build();
 
@@ -146,8 +145,8 @@ class ReservationServiceTests {
 	void createReservationByAdmin() {
 
 		// given
-		ReservationAdminRequest request = new ReservationAdminRequest("예약자이름",
-				DataTimeFormatterUtils.getFormattedTomorrowDate(), 1L, 1L, 1L);
+		ReservationAdminRequest request = new ReservationAdminRequest("예약자이름", DataTimeFormatterUtils.TOMORROW_DATE, 1L,
+				1L, 1L);
 
 		var member = Member.builder().id(1L).name("예약자이름").email("admin@nextstep.com").role("ADMIN").build();
 
@@ -170,7 +169,7 @@ class ReservationServiceTests {
 		// then
 		assertThat(createdReservation).isNotNull();
 		assertThat(createdReservation.name()).isEqualTo("예약자이름");
-		assertThat(createdReservation.date()).isEqualTo(DataTimeFormatterUtils.getFormattedTomorrowDate());
+		assertThat(createdReservation.date()).isEqualTo(DataTimeFormatterUtils.TOMORROW_DATE);
 		assertThat(createdReservation.time().id()).isEqualTo(1L);
 		assertThat(createdReservation.theme().id()).isEqualTo(1L);
 	}

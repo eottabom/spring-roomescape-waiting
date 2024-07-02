@@ -12,8 +12,8 @@ import org.junit.jupiter.api.Test;
 import roomescape.DataTimeFormatterUtils;
 import roomescape.auth.JwtCookieManager;
 import roomescape.auth.JwtTokenProvider;
-import roomescape.web.controller.dto.MemberResponse;
 import roomescape.domain.MemberRole;
+import roomescape.web.controller.dto.MemberResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -63,7 +63,7 @@ class MissionStepTests {
 		createReservationTime();
 		Map<String, String> params = new HashMap<>();
 		params.put("name", "브라운");
-		params.put("date", DataTimeFormatterUtils.getFormattedTomorrowDate());
+		params.put("date", DataTimeFormatterUtils.TOMORROW_DATE);
 		params.put("timeId", "1");
 		params.put("themeId", "1");
 

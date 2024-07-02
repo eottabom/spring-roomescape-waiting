@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import roomescape.DataTimeFormatterUtils;
 import roomescape.auth.JwtCookieManager;
 import roomescape.auth.JwtTokenProvider;
+import roomescape.domain.MemberRole;
 import roomescape.web.controller.dto.MemberResponse;
 import roomescape.web.controller.dto.ReservationRequest;
 import roomescape.web.controller.dto.ReservationResponse;
@@ -14,7 +15,6 @@ import roomescape.web.controller.dto.ReservationTimeRequest;
 import roomescape.web.controller.dto.ReservationTimeResponse;
 import roomescape.web.controller.dto.ThemeRequest;
 import roomescape.web.controller.dto.ThemeResponse;
-import roomescape.domain.MemberRole;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -79,8 +79,8 @@ class ReservationIntegrationTests {
 
 		// create reservation
 		// given
-		ReservationRequest reservationRequest = new ReservationRequest("tester",
-				DataTimeFormatterUtils.getFormattedTomorrowDate(), 1L, 1L);
+		ReservationRequest reservationRequest = new ReservationRequest("tester", DataTimeFormatterUtils.TOMORROW_DATE,
+				1L, 1L);
 
 		MemberResponse memberResponse = new MemberResponse(1L, "tester", "tester@gmail.com", MemberRole.USER.name());
 		String token = this.jwtTokenProvider.createToken(memberResponse);

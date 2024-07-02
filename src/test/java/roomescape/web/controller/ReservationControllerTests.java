@@ -9,14 +9,13 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import roomescape.web.controller.ReservationController;
+import roomescape.domain.LoginMember;
+import roomescape.domain.MemberRole;
+import roomescape.service.ReservationService;
 import roomescape.web.controller.dto.ReservationRequest;
 import roomescape.web.controller.dto.ReservationResponse;
 import roomescape.web.controller.dto.ReservationTimeResponse;
 import roomescape.web.controller.dto.ThemeResponse;
-import roomescape.domain.LoginMember;
-import roomescape.domain.MemberRole;
-import roomescape.service.ReservationService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -105,11 +104,14 @@ class ReservationControllerTests {
 			softly.assertThat(responseEntity.getBody().name()).isEqualTo(reservationResponse.name());
 			softly.assertThat(responseEntity.getBody().date()).isEqualTo(reservationResponse.date());
 			softly.assertThat(responseEntity.getBody().time().id()).isEqualTo(reservationResponse.time().id());
-			softly.assertThat(responseEntity.getBody().time().startAt()).isEqualTo(reservationResponse.time().startAt());
+			softly.assertThat(responseEntity.getBody().time().startAt())
+				.isEqualTo(reservationResponse.time().startAt());
 			softly.assertThat(responseEntity.getBody().theme().id()).isEqualTo(reservationResponse.theme().id());
 			softly.assertThat(responseEntity.getBody().theme().name()).isEqualTo(reservationResponse.theme().name());
-			softly.assertThat(responseEntity.getBody().theme().description()).isEqualTo(reservationResponse.theme().description());
-			softly.assertThat(responseEntity.getBody().theme().thumbnail()).isEqualTo(reservationResponse.theme().thumbnail());
+			softly.assertThat(responseEntity.getBody().theme().description())
+				.isEqualTo(reservationResponse.theme().description());
+			softly.assertThat(responseEntity.getBody().theme().thumbnail())
+				.isEqualTo(reservationResponse.theme().thumbnail());
 		});
 	}
 

@@ -10,11 +10,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import roomescape.web.controller.ReservationTimeController;
+import roomescape.service.ReservationTimeService;
 import roomescape.web.controller.dto.AvailableReservationTimeResponse;
 import roomescape.web.controller.dto.ReservationTimeRequest;
 import roomescape.web.controller.dto.ReservationTimeResponse;
-import roomescape.service.ReservationTimeService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

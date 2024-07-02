@@ -2,7 +2,6 @@ package roomescape.web.controller;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -77,11 +76,14 @@ class ReservationAdminControllerTests {
 			softly.assertThat(responseEntity.getBody().name()).isEqualTo(reservationResponse.name());
 			softly.assertThat(responseEntity.getBody().date()).isEqualTo(reservationResponse.date());
 			softly.assertThat(responseEntity.getBody().time().id()).isEqualTo(reservationResponse.time().id());
-			softly.assertThat(responseEntity.getBody().time().startAt()).isEqualTo(reservationResponse.time().startAt());
+			softly.assertThat(responseEntity.getBody().time().startAt())
+				.isEqualTo(reservationResponse.time().startAt());
 			softly.assertThat(responseEntity.getBody().theme().id()).isEqualTo(reservationResponse.theme().id());
 			softly.assertThat(responseEntity.getBody().theme().name()).isEqualTo(reservationResponse.theme().name());
-			softly.assertThat(responseEntity.getBody().theme().description()).isEqualTo(reservationResponse.theme().description());
-			softly.assertThat(responseEntity.getBody().theme().thumbnail()).isEqualTo(reservationResponse.theme().thumbnail());
+			softly.assertThat(responseEntity.getBody().theme().description())
+				.isEqualTo(reservationResponse.theme().description());
+			softly.assertThat(responseEntity.getBody().theme().thumbnail())
+				.isEqualTo(reservationResponse.theme().thumbnail());
 		});
 	}
 

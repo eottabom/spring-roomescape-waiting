@@ -1,16 +1,14 @@
 package roomescape.repository;
 
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import org.assertj.core.api.SoftAssertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import roomescape.domain.Reservation;
+import roomescape.DataTimeFormatterUtils;
 import roomescape.domain.ReservationTime;
-import roomescape.domain.Theme;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -20,21 +18,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-class ReservationTimeJpaRepositoryTests {
-
-	@Autowired
-	private ReservationJpaRepository reservationJpaRepository;
-
-	@Autowired
-	private ThemeJpaRepository themeJpaRepository;
+class ReservationTimeJpaRepositoryTests extends AbstractRepositoryTests {
 
 	@Autowired
 	private ReservationTimeJpaRepository reservationTimeJpaRepository;
 
+	@BeforeEach
+	void setup() {
+		createTheme();
+	}
+
 	@Test
 	void saveReservationTime() {
 		// given
-		ReservationTime reservationTime = ReservationTime.builder().id(1L).startAt("10:00").build();
+		ReservationTime reservationTime = generateReservationTime(1L, "10:00");
 
 		// when
 		var savedReservationTime = this.reservationTimeJpaRepository.save(reservationTime);
@@ -65,7 +62,7 @@ class ReservationTimeJpaRepositoryTests {
 	@Test
 	void findReservationTimeById() {
 		// given
-		createThemeAndNReservationTimeAndNReservation(1);
+		createReservationsWithReservationTime(1);
 
 		// when
 		Optional<ReservationTime> foundReservationTime = this.reservationTimeJpaRepository.findById(1L);
@@ -80,13 +77,13 @@ class ReservationTimeJpaRepositoryTests {
 	@Test
 	void findReservedTimeIds() {
 		// given
-		createThemeAndNReservationTimeAndNReservation(3);
-		String date = "2024-06-18";
+		createReservationsWithReservationTime(3);
 		long themeId = 1L;
 		List<Long> expectedIds = Arrays.asList(1L, 2L, 3L);
 
 		// when
-		List<Long> reservedTimeIds = this.reservationTimeJpaRepository.findReservedTimeIds(date, themeId);
+		List<Long> reservedTimeIds = this.reservationTimeJpaRepository
+			.findReservedTimeIds(DataTimeFormatterUtils.TOMORROW_DATE, themeId);
 
 		// then
 		assertThat(reservedTimeIds).isNotNull();
@@ -97,33 +94,13 @@ class ReservationTimeJpaRepositoryTests {
 	@Test
 	void existsById() {
 		// given
-		createThemeAndNReservationTimeAndNReservation(1);
+		createReservationsWithReservationTime(1);
 
 		// when
 		var existsById = this.reservationTimeJpaRepository.existsById(1L);
 
 		// then
 		assertThat(existsById).isTrue();
-	}
-
-	private void createThemeAndNReservationTimeAndNReservation(int n) {
-		Theme theme = Theme.builder().id(1L).name("Theme1").description("First theme").thumbnail("Theme image").build();
-		this.themeJpaRepository.save(theme);
-
-		for (int i = 1; i <= n; i++) {
-			LocalTime startTime = LocalTime.parse("10:00").plusMinutes(i);
-			ReservationTime reservationTime = ReservationTime.builder()
-				.startAt(startTime.format(DateTimeFormatter.ofPattern("HH:mm")))
-				.build();
-			this.reservationTimeJpaRepository.save(reservationTime);
-
-			Reservation reservation = Reservation.builder()
-				.date("2024-06-18")
-				.theme(theme)
-				.time(reservationTime)
-				.build();
-			this.reservationJpaRepository.save(reservation);
-		}
 	}
 
 }

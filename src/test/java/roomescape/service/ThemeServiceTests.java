@@ -10,11 +10,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import roomescape.repository.ThemeJpaRepository;
-import roomescape.web.controller.dto.ThemeRequest;
 import roomescape.domain.Theme;
 import roomescape.exception.ErrorCode;
 import roomescape.exception.RoomEscapeException;
+import roomescape.repository.ThemeJpaRepository;
+import roomescape.web.controller.dto.ThemeRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
