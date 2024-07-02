@@ -1,9 +1,11 @@
 package roomescape.integration;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class ReservationIntegrationTests extends AbstractIntegrationTests {
 
+	@DisplayName("예약 컨트롤러 및 내 예약 목록 조회 통합테스트")
 	@Test
 	void reservationControllerEndpoints() {
 		// create reservation time

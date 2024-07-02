@@ -15,6 +15,7 @@ import roomescape.domain.LoginMember;
 import roomescape.domain.Member;
 import roomescape.domain.MemberRole;
 import roomescape.domain.Reservation;
+import roomescape.domain.ReservationStatus;
 import roomescape.domain.ReservationTime;
 import roomescape.domain.Theme;
 import roomescape.exception.ErrorCode;
@@ -63,15 +64,23 @@ class ReservationServiceTests {
 		// given
 		List<Reservation> reservations = new ArrayList<>();
 
-		ReservationTime reservationTime = ReservationTime.builder().id(1L).startAt("10:00").build();
-		Theme theme = Theme.builder().id(1L).name("테마1").description("첫번째테마").thumbnail("테마이미지").build();
+		var reservationTime = ReservationTime.builder().id(1L).startAt("10:00").build();
+		var theme = Theme.builder().id(1L).name("테마1").description("첫번째테마").thumbnail("테마이미지").build();
+		var member = Member.builder()
+			.id(1L)
+			.name("tester")
+			.email("tester@gmail.com")
+			.role(MemberRole.USER.name())
+			.build();
 
-		Reservation reservation = Reservation.builder()
+		var reservation = Reservation.builder()
 			.id(1L)
 			.name("tester")
 			.date("2024-06-06")
 			.time(reservationTime)
 			.theme(theme)
+			.member(member)
+			.status(ReservationStatus.RESERVATION.name())
 			.build();
 		reservations.add(reservation);
 
@@ -101,16 +110,24 @@ class ReservationServiceTests {
 		// given
 		ReservationRequest request = new ReservationRequest("tester", DataTimeFormatterUtils.TOMORROW_DATE, 1L, 1L);
 
-		ReservationTime reservationTime = ReservationTime.builder().id(1L).startAt("10:00").build();
+		var reservationTime = ReservationTime.builder().id(1L).startAt("10:00").build();
+		var theme = Theme.builder().id(1L).name("테마1").description("첫번째테마").thumbnail("테마이미지").build();
+		var member = Member.builder()
+			.id(1L)
+			.name("tester")
+			.email("tester@gmail.com")
+			.role(MemberRole.USER.name())
+			.build();
 
-		Reservation reservation = Reservation.builder()
+		var reservation = Reservation.builder()
 			.id(1L)
 			.name("tester")
 			.date("2024-06-06")
 			.time(reservationTime)
+			.theme(theme)
+			.member(member)
+			.status(ReservationStatus.RESERVATION.name())
 			.build();
-
-		Theme theme = Theme.builder().id(1L).name("테마1").description("첫번째테마").thumbnail("테마이미지").build();
 
 		given(this.themeService.getThemeById(1L)).willReturn(theme);
 		given(this.reservationTimeService.getReservationTimeById(1L)).willReturn(reservationTime);
@@ -149,9 +166,7 @@ class ReservationServiceTests {
 				1L, 1L);
 
 		var member = Member.builder().id(1L).name("예약자이름").email("admin@nextstep.com").role("ADMIN").build();
-
 		var reservationTime = ReservationTime.builder().id(1L).startAt("10:00").build();
-
 		var theme = Theme.builder().id(1L).name("테마1").description("테마 설명").thumbnail("테마 이미지").build();
 
 		given(this.memberService.findById(1L)).willReturn(member);
@@ -192,15 +207,23 @@ class ReservationServiceTests {
 		String dateFrom = "2024-06-01";
 		String dateTo = "2024-06-30";
 
-		ReservationTime reservationTime = ReservationTime.builder().id(1L).startAt("10:00").build();
-		Theme theme = Theme.builder().id(1L).name("테마1").description("첫번째테마").thumbnail("테마이미지").build();
+		var reservationTime = ReservationTime.builder().id(1L).startAt("10:00").build();
+		var theme = Theme.builder().id(1L).name("테마1").description("첫번째테마").thumbnail("테마이미지").build();
+		var member = Member.builder()
+			.id(1L)
+			.name("tester")
+			.email("tester@gmail.com")
+			.role(MemberRole.USER.name())
+			.build();
 
-		Reservation reservation = Reservation.builder()
+		var reservation = Reservation.builder()
 			.id(1L)
 			.name("tester")
 			.date("2024-06-06")
 			.time(reservationTime)
 			.theme(theme)
+			.member(member)
+			.status(ReservationStatus.RESERVATION.name())
 			.build();
 
 		List<Reservation> reservations = List.of(reservation);

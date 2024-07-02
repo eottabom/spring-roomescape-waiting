@@ -5,7 +5,10 @@ import java.time.format.DateTimeFormatter;
 
 import org.assertj.core.api.SoftAssertions;
 import roomescape.DataTimeFormatterUtils;
+import roomescape.domain.Member;
+import roomescape.domain.MemberRole;
 import roomescape.domain.Reservation;
+import roomescape.domain.ReservationStatus;
 import roomescape.domain.ReservationTime;
 import roomescape.domain.Theme;
 
@@ -69,11 +72,20 @@ public abstract class AbstractRepositoryTests {
 
 	void createReservation(Theme theme, ReservationTime reservationTime) {
 		// given
+		var member = Member.builder()
+				.id(1L)
+				.name("tester")
+				.email("tester@gmail.com")
+				.role(MemberRole.USER.name())
+				.build();
+
 		Reservation reservation = Reservation.builder()
 			.name("tester")
 			.date("2024-06-06")
 			.time(reservationTime)
 			.theme(theme)
+			.status(ReservationStatus.RESERVATION.name())
+			.member(member)
 			.build();
 
 		// when
