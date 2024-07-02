@@ -7,6 +7,8 @@ import java.util.List;
 
 import roomescape.domain.LoginMember;
 import roomescape.domain.Reservation;
+import roomescape.domain.ReservationStatus;
+import roomescape.domain.ReservationTime;
 import roomescape.exception.ErrorCode;
 import roomescape.exception.RoomEscapeException;
 import roomescape.repository.ReservationJpaRepository;
@@ -45,11 +47,13 @@ public class ReservationService {
 
 	@Transactional
 	public ReservationResponse create(ReservationRequest request, LoginMember loginMember) {
+		var foundMember = this.memberService.findByEmail(loginMember.getEmail());
 		var createReservationRequest = CreateReservationRequest.builder()
 			.date(request.date())
 			.timeId(request.timeId())
 			.themeId(request.themeId())
 			.memberName(loginMember.getName())
+			.member(foundMember)
 			.build();
 		return createReservation(createReservationRequest);
 	}
@@ -62,6 +66,7 @@ public class ReservationService {
 			.timeId(request.timeId())
 			.themeId(request.themeId())
 			.memberName(foundMember.getName())
+			.member(foundMember)
 			.build();
 		return createReservation(createReservationRequest);
 	}
@@ -83,13 +88,20 @@ public class ReservationService {
 		checkReservationAvailability(date, reservationTime.getStartAt(), themeId);
 
 		var theme = this.themeService.getThemeById(themeId);
+		var reservationStatus = checkReservationExists(date, reservationTime, themeId) ? ReservationStatus.WAITING
+				: ReservationStatus.RESERVATION;
+
 		var reservation = Reservation.builder()
 			.name(createReservationRequest.getMemberName())
 			.date(date)
 			.time(reservationTime)
 			.theme(theme)
+			.status(reservationStatus.name())
+			.member(createReservationRequest.getMember())
 			.build();
+
 		var savedReservation = this.reservationJpaRepository.save(reservation);
+
 		return ReservationResponse.from(savedReservation, reservationTime, theme);
 	}
 
@@ -110,6 +122,12 @@ public class ReservationService {
 	public List<ReservationResponse> searchReservations(ReservationSearchRequest request) {
 		return ReservationResponse.from(this.reservationJpaRepository.findReservations(request.memberId(),
 				request.themeId(), request.dateFrom(), request.dateTo()));
+	}
+
+	private boolean checkReservationExists(String date, ReservationTime time, Long themeId) {
+		List<Reservation> existsReservations = this.reservationJpaRepository.findByDateAndTimeAndThemeId(date, time,
+				themeId);
+		return !existsReservations.isEmpty();
 	}
 
 }
