@@ -3,21 +3,14 @@ package roomescape.integration;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-import roomescape.web.controller.dto.ThemeRequest;
-import roomescape.web.controller.dto.ThemeResponse;
 
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.context.TestPropertySource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@TestPropertySource(properties = "spring.datasource.url=jdbc:h2:mem:testdb")
-class ThemeIntegrationTests {
+class ThemeIntegrationTests extends AbstractIntegrationTests {
 
 	private final TestRestTemplate restTemplate = new TestRestTemplate();
 
@@ -27,20 +20,7 @@ class ThemeIntegrationTests {
 	@Test
 	void themeControllerEndpoints() {
 		// create theme
-		// given
-		ThemeRequest themeRequest = new ThemeRequest("테마1", "첫번째테마", "썸네일이미지");
-
-		// when
-		var createResponse = this.restTemplate.postForEntity("http://localhost:" + this.port + "/themes", themeRequest,
-				ThemeResponse.class);
-
-		// then
-		assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-		ThemeResponse themeResponse = createResponse.getBody();
-		assertThat(themeResponse).isNotNull();
-		assertThat(themeResponse.name()).isEqualTo("테마1");
-		assertThat(themeResponse.description()).isEqualTo("첫번째테마");
-		assertThat(themeResponse.thumbnail()).isEqualTo("썸네일이미지");
+		var createdTheme = createTheme();
 
 		// get themes
 		// when
@@ -55,14 +35,10 @@ class ThemeIntegrationTests {
 
 		// delete theme
 		// given
-		long themeId = themeResponse.id();
+		long themeId = createdTheme.id();
 
 		// when
-		var deleteResponse = this.restTemplate.exchange("http://localhost:" + this.port + "/themes/" + themeId,
-				HttpMethod.DELETE, null, Void.class);
-
-		// then
-		assertThat(deleteResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+		deleteTheme(themeId);
 
 		// check theme delete
 		// when

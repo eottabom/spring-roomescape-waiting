@@ -6,7 +6,7 @@ import roomescape.domain.ReservationStatus;
 public record ReservationsMineResponse(long reservationId, String themeName, String date, String time, String status) {
 
 	public static ReservationsMineResponse from(Reservation reservation) {
-		return new ReservationsMineResponse(reservation.getId(), reservation.getName(), reservation.getDate(),
+		return new ReservationsMineResponse(reservation.getId(), reservation.getTheme().getName(), reservation.getDate(),
 				reservation.getTime().getStartAt(), ReservationStatus.fromStatus(reservation.getStatus()));
 	}
 

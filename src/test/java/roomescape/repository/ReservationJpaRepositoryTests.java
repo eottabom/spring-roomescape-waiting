@@ -10,14 +10,10 @@ import roomescape.domain.ReservationTime;
 import roomescape.domain.Theme;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.annotation.DirtiesContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DataJpaTest
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-class ReservationJpaRepositoryTests extends AbstractRepositoryTests{
+class ReservationJpaRepositoryTests extends AbstractRepositoryTests {
 
 	@Autowired
 	private ReservationJpaRepository reservationJpaRepository;
@@ -73,7 +69,7 @@ class ReservationJpaRepositoryTests extends AbstractRepositoryTests{
 		Reservation savedReservation = this.reservationJpaRepository.save(reservation);
 
 		// then
-		SoftAssertions.assertSoftly(softly -> {
+		SoftAssertions.assertSoftly((softly) -> {
 			softly.assertThat(savedReservation).isNotNull();
 			softly.assertThat(savedReservation.getId()).isEqualTo(1L);
 			softly.assertThat(savedReservation.getName()).isEqualTo("tester");
@@ -148,36 +144,5 @@ class ReservationJpaRepositoryTests extends AbstractRepositoryTests{
 		// then
 		assertThat(duplicateReservation).isTrue();
 	}
-
-//	private void createThemeAndReservationTimeAndReservation() {
-//		// given
-//		ReservationTime reservationTime = ReservationTime.builder().startAt("10:00").build();
-//		this.reservationTimeJpaRepository.save(reservationTime);
-//
-//		Theme theme = Theme.builder().name("테마1").description("첫번째테마").thumbnail("테마이미지").build();
-//		this.themeJpaRepository.save(theme);
-//
-//		Reservation reservation = Reservation.builder()
-//			.name("tester")
-//			.date("2024-06-06")
-//			.time(reservationTime)
-//			.theme(theme)
-//			.build();
-//
-//		// when
-//		Reservation savedReservation = this.reservationJpaRepository.save(reservation);
-//
-//		// then
-//		SoftAssertions.assertSoftly(softly -> {
-//			softly.assertThat(savedReservation).isNotNull();
-//			softly.assertThat(savedReservation.getId()).isNotNull();
-//			softly.assertThat(savedReservation.getName()).isEqualTo("tester");
-//			softly.assertThat(savedReservation.getDate()).isEqualTo("2024-06-06");
-//			softly.assertThat(savedReservation.getTheme()).isEqualTo(theme);
-//			softly.assertThat(savedReservation.getTime()).isEqualTo(reservationTime);
-//		});
-//	}
-
-
 
 }

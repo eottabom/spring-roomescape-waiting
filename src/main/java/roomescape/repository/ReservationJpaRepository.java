@@ -3,6 +3,7 @@ package roomescape.repository;
 import java.util.List;
 
 import roomescape.domain.Reservation;
+import roomescape.domain.ReservationTime;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -26,5 +27,9 @@ public interface ReservationJpaRepository extends JpaRepository<Reservation, Lon
 	""")
 	List<Reservation> findReservations(@Param("memberId") long memberId, @Param("themeId") long themeId,
 			@Param("dateFrom") String dateFrom, @Param("dateTo") String dateTo);
+
+	List<Reservation> findByName(String name);
+
+	List<Reservation> findByDateAndTimeAndThemeId(String date, ReservationTime time, Long theme_id);
 
 }
