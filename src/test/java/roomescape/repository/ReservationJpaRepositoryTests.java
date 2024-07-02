@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
 import roomescape.domain.Reservation;
+import roomescape.domain.ReservationStatus;
 import roomescape.domain.ReservationTime;
 import roomescape.domain.Theme;
 
@@ -143,6 +144,62 @@ class ReservationJpaRepositoryTests extends AbstractRepositoryTests {
 
 		// then
 		assertThat(duplicateReservation).isTrue();
+	}
+
+	@Test
+	void findByName() {
+		// given
+		createThemeAndReservationTimeAndReservation();
+		String name = "tester";
+
+		// when
+		var foundReservationByUserName = this.reservationJpaRepository.findByName(name);
+
+		// then
+		assertThat(foundReservationByUserName).isNotEmpty();
+		assertThat(foundReservationByUserName).hasSize(1);
+		assertThat(foundReservationByUserName).allSatisfy((reservationsMineResponse) -> {
+			assertThat(reservationsMineResponse.getId()).isEqualTo(1L);
+			assertThat(reservationsMineResponse.getName()).isEqualTo("tester");
+			assertThat(reservationsMineResponse.getDate()).isEqualTo("2024-06-06");
+			assertThat(reservationsMineResponse.getTime().getStartAt()).isEqualTo("10:00");
+			assertThat(reservationsMineResponse.getTheme().getName()).isEqualTo("테마1");
+			assertThat(reservationsMineResponse.getStatus()).isEqualTo(ReservationStatus.RESERVATION.name());
+		});
+	}
+
+	@Test
+	void findByDateAndTimeAndThemeIdWhenNotEmpty() {
+		// given
+		createThemeAndReservationTimeAndReservation();
+
+		var reservationTime = ReservationTime.builder().id(1L).startAt("10:00").build();
+
+		// when
+		var existsReservations = this.reservationJpaRepository.findByDateAndTimeAndThemeId("2024-06-06",
+				reservationTime, 1L);
+
+		assertThat(existsReservations).isNotEmpty();
+		assertThat(existsReservations).allSatisfy((reservation) -> {
+			assertThat(reservation.getId()).isEqualTo(1L);
+			assertThat(reservation.getName()).isEqualTo("tester");
+			assertThat(reservation.getDate()).isEqualTo("2024-06-06");
+			assertThat(reservation.getTime().getStartAt()).isEqualTo("10:00");
+			assertThat(reservation.getTheme().getName()).isEqualTo("테마1");
+			assertThat(reservation.getStatus()).isEqualTo(ReservationStatus.RESERVATION.name());
+		});
+	}
+
+	@Test
+	void findByDateAndTimeAndThemeIdWhenEmpty() {
+		// given
+		var reservationTime = ReservationTime.builder().id(1L).startAt("10:00").build();
+
+		// when
+		var existsReservations = this.reservationJpaRepository.findByDateAndTimeAndThemeId("2024-06-06",
+				reservationTime, 1L);
+
+		assertThat(existsReservations).isEmpty();
 	}
 
 }
