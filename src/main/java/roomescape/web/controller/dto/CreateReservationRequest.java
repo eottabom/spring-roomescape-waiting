@@ -1,5 +1,7 @@
 package roomescape.web.controller.dto;
 
+import roomescape.domain.Member;
+
 public final class CreateReservationRequest {
 
 	private final String date;
@@ -10,11 +12,14 @@ public final class CreateReservationRequest {
 
 	private final String memberName;
 
+	private final Member member;
+
 	private CreateReservationRequest(Builder builder) {
 		this.date = builder.date;
 		this.timeId = builder.timeId;
 		this.themeId = builder.themeId;
 		this.memberName = builder.memberName;
+		this.member = builder.member;
 	}
 
 	public String getDate() {
@@ -33,6 +38,10 @@ public final class CreateReservationRequest {
 		return this.memberName;
 	}
 
+	public Member getMember() {
+		return this.member;
+	}
+
 	public static Builder builder() {
 		return new Builder();
 	}
@@ -46,6 +55,8 @@ public final class CreateReservationRequest {
 		private long themeId;
 
 		private String memberName;
+
+		private Member member;
 
 		public Builder date(String date) {
 			this.date = date;
@@ -64,6 +75,11 @@ public final class CreateReservationRequest {
 
 		public Builder memberName(String memberName) {
 			this.memberName = memberName;
+			return this;
+		}
+
+		public Builder member(Member member) {
+			this.member = member;
 			return this;
 		}
 

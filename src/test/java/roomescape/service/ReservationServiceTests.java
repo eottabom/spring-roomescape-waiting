@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -15,6 +16,7 @@ import roomescape.domain.LoginMember;
 import roomescape.domain.Member;
 import roomescape.domain.MemberRole;
 import roomescape.domain.Reservation;
+import roomescape.domain.ReservationStatus;
 import roomescape.domain.ReservationTime;
 import roomescape.domain.Theme;
 import roomescape.exception.ErrorCode;
@@ -63,15 +65,23 @@ class ReservationServiceTests {
 		// given
 		List<Reservation> reservations = new ArrayList<>();
 
-		ReservationTime reservationTime = ReservationTime.builder().id(1L).startAt("10:00").build();
-		Theme theme = Theme.builder().id(1L).name("테마1").description("첫번째테마").thumbnail("테마이미지").build();
+		var reservationTime = ReservationTime.builder().id(1L).startAt("10:00").build();
+		var theme = Theme.builder().id(1L).name("테마1").description("첫번째테마").thumbnail("테마이미지").build();
+		var member = Member.builder()
+			.id(1L)
+			.name("tester")
+			.email("tester@gmail.com")
+			.role(MemberRole.USER.name())
+			.build();
 
-		Reservation reservation = Reservation.builder()
+		var reservation = Reservation.builder()
 			.id(1L)
 			.name("tester")
 			.date("2024-06-06")
 			.time(reservationTime)
 			.theme(theme)
+			.member(member)
+			.status(ReservationStatus.RESERVATION.name())
 			.build();
 		reservations.add(reservation);
 
@@ -98,25 +108,18 @@ class ReservationServiceTests {
 
 	@Test
 	void createReservation() {
+
 		// given
-		ReservationRequest request = new ReservationRequest("tester", DataTimeFormatterUtils.getFormattedTomorrowDate(),
-				1L, 1L);
-
-		ReservationTime reservationTime = ReservationTime.builder().id(1L).startAt("10:00").build();
-
-		Reservation reservation = Reservation.builder()
+		var reservationRequest = new ReservationRequest("tester", DataTimeFormatterUtils.TOMORROW_DATE, 1L, 1L);
+		var reservationTime = ReservationTime.builder().id(1L).startAt("10:00").build();
+		var theme = Theme.builder().id(1L).name("테마1").description("첫번째테마").thumbnail("테마이미지").build();
+		var member = Member.builder()
 			.id(1L)
 			.name("tester")
-			.date("2024-06-06")
-			.time(reservationTime)
+			.email("tester@gmail.com")
+			.password("encodedPassword")
+			.role(MemberRole.USER.name())
 			.build();
-
-		Theme theme = Theme.builder().id(1L).name("테마1").description("첫번째테마").thumbnail("테마이미지").build();
-
-		given(this.themeService.getThemeById(1L)).willReturn(theme);
-		given(this.reservationTimeService.getReservationTimeById(1L)).willReturn(reservationTime);
-		given(this.reservationTimeJpaRepository.findById(1L)).willReturn(Optional.ofNullable(reservationTime));
-		given(this.reservationJpaRepository.save(any(Reservation.class))).willReturn(reservation);
 
 		var loginMember = LoginMember.builder()
 			.name("tester")
@@ -124,8 +127,22 @@ class ReservationServiceTests {
 			.role(MemberRole.USER.name())
 			.build();
 
-		// when
-		var createdReservation = this.reservationService.create(request, loginMember);
+		var reservation = Reservation.builder()
+			.id(1L)
+			.name("tester")
+			.date("2024-06-06")
+			.time(reservationTime)
+			.theme(theme)
+			.member(member)
+			.status(ReservationStatus.RESERVATION.name())
+			.build();
+
+		given(this.themeService.getThemeById(1L)).willReturn(theme);
+		given(this.reservationTimeService.getReservationTimeById(1L)).willReturn(reservationTime);
+		given(this.reservationTimeJpaRepository.findById(1L)).willReturn(Optional.ofNullable(reservationTime));
+		given(this.reservationJpaRepository.save(any(Reservation.class))).willReturn(reservation);
+
+		var createdReservation = this.reservationService.create(reservationRequest, loginMember);
 
 		// then
 		assertThat(createdReservation).isNotNull();
@@ -142,17 +159,77 @@ class ReservationServiceTests {
 		assertThat(createdReservation.theme().thumbnail()).isEqualTo("테마이미지");
 	}
 
+	@DisplayName("해당 날짜, 시간, 테마에 이미 예약이 되어 있는 경우 예약 대기 상태여야 한다.")
 	@Test
-	void createReservationByAdmin() {
-
+	void createReservationWhenReservationAlreadyExists() {
 		// given
-		ReservationAdminRequest request = new ReservationAdminRequest("예약자이름",
-				DataTimeFormatterUtils.getFormattedTomorrowDate(), 1L, 1L, 1L);
+		var loginMember = LoginMember.builder()
+			.name("tester")
+			.email("tester@gmail.com")
+			.role(MemberRole.USER.name())
+			.build();
 
-		var member = Member.builder().id(1L).name("예약자이름").email("admin@nextstep.com").role("ADMIN").build();
+		ReservationRequest request = new ReservationRequest("tester", DataTimeFormatterUtils.TOMORROW_DATE, 1L, 1L);
+
+		var foundMember = Member.builder()
+			.id(1L)
+			.name("tester")
+			.email("tester@gmail.com")
+			.password("encodedPassword")
+			.role(MemberRole.USER.name())
+			.build();
 
 		var reservationTime = ReservationTime.builder().id(1L).startAt("10:00").build();
 
+		var theme = Theme.builder().id(1L).name("테마1").description("첫번째테마").thumbnail("테마이미지").build();
+
+		var existingReservation = Reservation.builder()
+			.id(2L)
+			.name("anotherUser")
+			.date("2024-07-04")
+			.time(reservationTime)
+			.theme(theme)
+			.member(foundMember)
+			.status(ReservationStatus.RESERVATION.name())
+			.build();
+
+		given(this.memberService.findByEmail("tester@gmail.com")).willReturn(foundMember);
+		given(this.reservationTimeService.getReservationTimeById(1L)).willReturn(reservationTime);
+		given(this.themeService.getThemeById(1L)).willReturn(theme);
+		given(this.reservationJpaRepository.findByDateAndTimeAndThemeId("2024-07-04", reservationTime, 1L))
+			.willReturn(List.of(existingReservation));
+		given(this.reservationJpaRepository.save(any())).willAnswer((invocation) -> {
+			Reservation reservation = invocation.getArgument(0);
+
+			// then
+			assertThat(reservation.getStatus()).isEqualTo(ReservationStatus.WAITING.name());
+			reservation.setId(1L);
+			return reservation;
+		});
+
+		// when
+		var reservationResponse = this.reservationService.create(request, loginMember);
+
+		// then
+		assertThat(reservationResponse).isNotNull();
+		assertThat(reservationResponse).isNotNull();
+		assertThat(reservationResponse.id()).isEqualTo(1L);
+		assertThat(reservationResponse.name()).isEqualTo("tester");
+		assertThat(reservationResponse.date()).isEqualTo(DataTimeFormatterUtils.TOMORROW_DATE);
+		assertThat(reservationResponse.time().id()).isEqualTo(1L);
+		assertThat(reservationResponse.time().startAt()).isEqualTo("10:00");
+		assertThat(reservationResponse.theme().id()).isEqualTo(1L);
+		assertThat(reservationResponse.theme().name()).isEqualTo("테마1");
+	}
+
+	@Test
+	void createReservationByAdmin() {
+		// given
+		ReservationAdminRequest request = new ReservationAdminRequest("예약자이름", DataTimeFormatterUtils.TOMORROW_DATE, 1L,
+				1L, 1L);
+
+		var member = Member.builder().id(1L).name("예약자이름").email("admin@nextstep.com").role("ADMIN").build();
+		var reservationTime = ReservationTime.builder().id(1L).startAt("10:00").build();
 		var theme = Theme.builder().id(1L).name("테마1").description("테마 설명").thumbnail("테마 이미지").build();
 
 		given(this.memberService.findById(1L)).willReturn(member);
@@ -170,9 +247,74 @@ class ReservationServiceTests {
 		// then
 		assertThat(createdReservation).isNotNull();
 		assertThat(createdReservation.name()).isEqualTo("예약자이름");
-		assertThat(createdReservation.date()).isEqualTo(DataTimeFormatterUtils.getFormattedTomorrowDate());
+		assertThat(createdReservation.date()).isEqualTo(DataTimeFormatterUtils.TOMORROW_DATE);
 		assertThat(createdReservation.time().id()).isEqualTo(1L);
 		assertThat(createdReservation.theme().id()).isEqualTo(1L);
+	}
+
+	@Test
+	void createReservationWhenPastDate() {
+		// given
+		ReservationRequest request = new ReservationRequest("tester", DataTimeFormatterUtils.YESTERDAY_DATE, 1L, 1L);
+
+		var reservationTime = ReservationTime.builder().id(1L).startAt("10:00").build();
+		var theme = Theme.builder().id(1L).name("테마1").description("첫번째테마").thumbnail("테마이미지").build();
+		var member = Member.builder()
+			.id(1L)
+			.name("tester")
+			.email("tester@gmail.com")
+			.role(MemberRole.USER.name())
+			.build();
+
+		var reservation = Reservation.builder()
+			.id(1L)
+			.name("tester")
+			.date("2024-06-06")
+			.time(reservationTime)
+			.theme(theme)
+			.member(member)
+			.status(ReservationStatus.RESERVATION.name())
+			.build();
+
+		given(this.themeService.getThemeById(1L)).willReturn(theme);
+		given(this.reservationTimeService.getReservationTimeById(1L)).willReturn(reservationTime);
+		given(this.reservationTimeJpaRepository.findById(1L)).willReturn(Optional.ofNullable(reservationTime));
+		given(this.reservationJpaRepository.save(any(Reservation.class))).willReturn(reservation);
+
+		var loginMember = LoginMember.builder()
+			.name("tester")
+			.email("tester@gmail.com")
+			.role(MemberRole.USER.name())
+			.build();
+
+		// when, then
+		assertThatThrownBy(() -> this.reservationService.create(request, loginMember))
+			.isInstanceOf(RoomEscapeException.class)
+			.hasMessage(ErrorCode.PAST_RESERVATION.getMessage());
+	}
+
+	@Test
+	void createReservationByAdminWhenPastDate() {
+		// given
+		ReservationAdminRequest request = new ReservationAdminRequest("예약자이름", DataTimeFormatterUtils.YESTERDAY_DATE,
+				1L, 1L, 1L);
+
+		var member = Member.builder().id(1L).name("예약자이름").email("admin@nextstep.com").role("ADMIN").build();
+		var reservationTime = ReservationTime.builder().id(1L).startAt("10:00").build();
+		var theme = Theme.builder().id(1L).name("테마1").description("테마 설명").thumbnail("테마 이미지").build();
+
+		given(this.memberService.findById(1L)).willReturn(member);
+		given(this.reservationTimeService.getReservationTimeById(1L)).willReturn(reservationTime);
+		given(this.themeService.getThemeById(1L)).willReturn(theme);
+		given(this.reservationJpaRepository.save(any())).willAnswer((invocation) -> {
+			Reservation reservation = invocation.getArgument(0);
+			reservation.setId(1L);
+			return reservation;
+		});
+
+		// when, then
+		assertThatThrownBy(() -> this.reservationService.createByAdmin(request)).isInstanceOf(RoomEscapeException.class)
+			.hasMessage(ErrorCode.PAST_RESERVATION.getMessage());
 	}
 
 	@Test
@@ -193,15 +335,23 @@ class ReservationServiceTests {
 		String dateFrom = "2024-06-01";
 		String dateTo = "2024-06-30";
 
-		ReservationTime reservationTime = ReservationTime.builder().id(1L).startAt("10:00").build();
-		Theme theme = Theme.builder().id(1L).name("테마1").description("첫번째테마").thumbnail("테마이미지").build();
+		var reservationTime = ReservationTime.builder().id(1L).startAt("10:00").build();
+		var theme = Theme.builder().id(1L).name("테마1").description("첫번째테마").thumbnail("테마이미지").build();
+		var member = Member.builder()
+			.id(1L)
+			.name("tester")
+			.email("tester@gmail.com")
+			.role(MemberRole.USER.name())
+			.build();
 
-		Reservation reservation = Reservation.builder()
+		var reservation = Reservation.builder()
 			.id(1L)
 			.name("tester")
 			.date("2024-06-06")
 			.time(reservationTime)
 			.theme(theme)
+			.member(member)
+			.status(ReservationStatus.RESERVATION.name())
 			.build();
 
 		List<Reservation> reservations = List.of(reservation);

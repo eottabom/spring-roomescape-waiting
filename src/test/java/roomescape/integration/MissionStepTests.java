@@ -12,8 +12,9 @@ import org.junit.jupiter.api.Test;
 import roomescape.DataTimeFormatterUtils;
 import roomescape.auth.JwtCookieManager;
 import roomescape.auth.JwtTokenProvider;
-import roomescape.web.controller.dto.MemberResponse;
 import roomescape.domain.MemberRole;
+import roomescape.domain.ReservationStatus;
+import roomescape.web.controller.dto.MemberResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -58,28 +59,10 @@ class MissionStepTests {
 
 	@Test
 	void crdReservation() {
-		Cookie cookie = JwtCookieManager.createCookie(this.userToken, 3600);
+
 		createTheme();
 		createReservationTime();
-		Map<String, String> params = new HashMap<>();
-		params.put("name", "브라운");
-		params.put("date", DataTimeFormatterUtils.getFormattedTomorrowDate());
-		params.put("timeId", "1");
-		params.put("themeId", "1");
-
-		RestAssured.given()
-			.log()
-			.all()
-			.contentType(ContentType.JSON)
-			.cookie(cookie.getName(), cookie.getValue())
-			.body(params)
-			.when()
-			.post("/reservations")
-			.then()
-			.log()
-			.all()
-			.statusCode(201)
-			.body("id", is(1));
+		createReservation();
 
 		RestAssured.given()
 			.log()
@@ -112,44 +95,6 @@ class MissionStepTests {
 
 		RestAssured.given().log().all().when().get("/times").then().log().all().statusCode(200).body("size()", is(1));
 		RestAssured.given().log().all().when().delete("/times/1").then().log().all().statusCode(204);
-	}
-
-	private void createReservationTime() {
-		Map<String, String> params = new HashMap<>();
-		params.put("startAt", "15:40");
-
-		RestAssured.given()
-			.log()
-			.all()
-			.contentType(ContentType.JSON)
-			.body(params)
-			.when()
-			.post("/times")
-			.then()
-			.log()
-			.all()
-			.statusCode(201)
-			.body("id", is(1));
-	}
-
-	private void createTheme() {
-		Map<String, String> params = new HashMap<>();
-		params.put("name", "테마1");
-		params.put("description", "첫번째테마");
-		params.put("thumbnail", "테마이미지");
-
-		RestAssured.given()
-			.log()
-			.all()
-			.contentType(ContentType.JSON)
-			.body(params)
-			.when()
-			.post("/themes")
-			.then()
-			.log()
-			.all()
-			.statusCode(201)
-			.body("id", is(1));
 	}
 
 	@DisplayName("로그인, 로그인 체크, 로그 아웃에 대한 테스트")
@@ -210,6 +155,97 @@ class MissionStepTests {
 			.statusCode(201)
 			.body("name", is("이름"))
 			.body("email", is("name@gmail.com"));
+	}
+
+	@Test
+	void getReservationsMine() {
+		Cookie cookie = JwtCookieManager.createCookie(this.userToken, 3600);
+		createReservationTime();
+		createTheme();
+		createReservation();
+
+		RestAssured.given()
+			.log()
+			.all()
+			.contentType(ContentType.JSON)
+			.cookie(cookie.getName(), cookie.getValue())
+			.when()
+			.get("/reservations-mine")
+			.then()
+			.log()
+			.all()
+			.statusCode(200)
+			.body("[0].themeName", is("테마1"))
+			.body("[0].date", is(DataTimeFormatterUtils.TOMORROW_DATE))
+			.body("[0].time", is("15:40"))
+			.body("[0].status", is(ReservationStatus.RESERVATION.getStatus()));
+
+		deleteReservation();
+	}
+
+	private void createReservationTime() {
+		Map<String, String> params = new HashMap<>();
+		params.put("startAt", "15:40");
+
+		RestAssured.given()
+			.log()
+			.all()
+			.contentType(ContentType.JSON)
+			.body(params)
+			.when()
+			.post("/times")
+			.then()
+			.log()
+			.all()
+			.statusCode(201)
+			.body("id", is(1));
+	}
+
+	private void createTheme() {
+		Map<String, String> params = new HashMap<>();
+		params.put("name", "테마1");
+		params.put("description", "첫번째테마");
+		params.put("thumbnail", "테마이미지");
+
+		RestAssured.given()
+			.log()
+			.all()
+			.contentType(ContentType.JSON)
+			.body(params)
+			.when()
+			.post("/themes")
+			.then()
+			.log()
+			.all()
+			.statusCode(201)
+			.body("id", is(1));
+	}
+
+	private void createReservation() {
+		Cookie cookie = JwtCookieManager.createCookie(this.userToken, 3600);
+		Map<String, String> params = new HashMap<>();
+		params.put("name", "tester");
+		params.put("date", DataTimeFormatterUtils.TOMORROW_DATE);
+		params.put("timeId", "1");
+		params.put("themeId", "1");
+
+		RestAssured.given()
+			.log()
+			.all()
+			.contentType(ContentType.JSON)
+			.cookie(cookie.getName(), cookie.getValue())
+			.body(params)
+			.when()
+			.post("/reservations")
+			.then()
+			.log()
+			.all()
+			.statusCode(201)
+			.body("id", is(1));
+	}
+
+	private void deleteReservation() {
+		RestAssured.given().log().all().when().delete("/reservations/1").then().log().all().statusCode(204);
 	}
 
 }

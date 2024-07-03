@@ -29,6 +29,12 @@ public class Reservation {
 	@JoinColumn(name = "theme_id")
 	private Theme theme;
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "member_id")
+	private Member member;
+
+	private String status;
+
 	public static Builder builder() {
 		return new Builder();
 	}
@@ -57,6 +63,14 @@ public class Reservation {
 		return this.theme;
 	}
 
+	public Member getMember() {
+		return this.member;
+	}
+
+	public String getStatus() {
+		return this.status;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) {
@@ -83,6 +97,8 @@ public class Reservation {
 				", date='" + this.date + '\'' +
 				", time=" + this.time +
 				", theme=" + this.theme +
+				", member=" + this.member +
+				", status='" + this.status + '\'' +
 				'}';
 		// @formatter:on
 	}
@@ -117,6 +133,16 @@ public class Reservation {
 
 		public Builder theme(Theme theme) {
 			this.reservation.theme = theme;
+			return this;
+		}
+
+		public Builder member(Member member) {
+			this.reservation.member = member;
+			return this;
+		}
+
+		public Builder status(String status) {
+			this.reservation.status = status;
 			return this;
 		}
 

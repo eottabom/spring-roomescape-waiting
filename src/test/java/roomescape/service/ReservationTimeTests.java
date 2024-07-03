@@ -11,11 +11,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import roomescape.repository.ReservationTimeJpaRepository;
-import roomescape.web.controller.dto.ReservationTimeRequest;
 import roomescape.domain.ReservationTime;
 import roomescape.exception.ErrorCode;
 import roomescape.exception.RoomEscapeException;
+import roomescape.repository.ReservationTimeJpaRepository;
+import roomescape.web.controller.dto.ReservationTimeRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -129,7 +129,8 @@ class ReservationTimeTests {
 		given(this.reservationTimeJpaRepository.findAll()).willReturn(reservationTimes);
 
 		List<Long> reservedTimeIds = Arrays.asList(1L, 3L);
-		given(this.reservationTimeJpaRepository.findReservedTimeIds(anyString(), eq(themeId))).willReturn(reservedTimeIds);
+		given(this.reservationTimeJpaRepository.findReservedTimeIds(anyString(), eq(themeId)))
+			.willReturn(reservedTimeIds);
 
 		// when
 		var availableTimes = this.reservationTimeService.getAvailableReservationTimes(date, themeId);

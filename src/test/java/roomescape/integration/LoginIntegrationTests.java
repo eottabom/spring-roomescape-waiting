@@ -2,9 +2,9 @@ package roomescape.integration;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import roomescape.web.controller.dto.LoginResponse;
-import roomescape.web.controller.dto.LoginRequest;
 import roomescape.domain.MemberRole;
+import roomescape.web.controller.dto.LoginRequest;
+import roomescape.web.controller.dto.LoginResponse;
 
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;

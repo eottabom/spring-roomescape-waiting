@@ -64,6 +64,12 @@ public class MemberService {
 			.orElseThrow(() -> new RoomEscapeException(ErrorCode.NOT_FOUND_MEMBER));
 	}
 
+	@Transactional(readOnly = true)
+	public Member findByEmail(String email) {
+		return this.memberJpaRepository.findByEmail(email)
+				.orElseThrow(() -> new RoomEscapeException(ErrorCode.NOT_FOUND_MEMBER));
+	}
+
 	private void checkPassword(String inputPassword, String storedPassword) {
 		if (!this.passwordEncoder.matches(inputPassword, storedPassword)) {
 			throw new RoomEscapeException(ErrorCode.INVALID_PASSWORD);

@@ -86,7 +86,7 @@ class MemberJpaRepositoryTests {
 
 		// then
 		assertThat(foundMember).isPresent();
-		foundMember.ifPresent(m -> {
+		foundMember.ifPresent((m) -> {
 			assertThat(m.getName()).isEqualTo("tester");
 			assertThat(m.getEmail()).isEqualTo("tester@naver.com");
 			assertThat(m.getRole()).isEqualTo(MemberRole.USER.name());

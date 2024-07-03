@@ -7,14 +7,10 @@ import org.junit.jupiter.api.Test;
 import roomescape.domain.Theme;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.annotation.DirtiesContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DataJpaTest
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-class ThemeJpaRepositoryTests {
+class ThemeJpaRepositoryTests extends AbstractRepositoryTests {
 
 	@Autowired
 	private ThemeJpaRepository themeJpaRepository;
@@ -98,11 +94,6 @@ class ThemeJpaRepositoryTests {
 
 		// then
 		assertThat(existsByName).isTrue();
-	}
-
-	private void createTheme() {
-		Theme theme = Theme.builder().id(1L).name("테마1").description("첫번째테마").thumbnail("썸네일이미지").build();
-		this.themeJpaRepository.save(theme);
 	}
 
 }

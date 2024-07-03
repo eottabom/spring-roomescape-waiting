@@ -7,11 +7,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import roomescape.web.controller.dto.LoginResponse;
-import roomescape.web.controller.dto.LoginRequest;
 import roomescape.exception.ErrorCode;
 import roomescape.exception.RoomEscapeException;
 import roomescape.service.AuthService;
+import roomescape.web.controller.dto.LoginRequest;
+import roomescape.web.controller.dto.LoginResponse;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -1,6 +1,5 @@
 package roomescape.web.controller;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.assertj.core.api.SoftAssertions;
@@ -9,10 +8,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import roomescape.web.controller.ThemeController;
+import roomescape.service.ThemeService;
 import roomescape.web.controller.dto.ThemeRequest;
 import roomescape.web.controller.dto.ThemeResponse;
-import roomescape.service.ThemeService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -56,7 +54,8 @@ class ThemeControllerTests {
 			softly.assertThat(responseEntity.getBody()).isNotNull();
 			softly.assertThat(responseEntity.getBody().get(0).id()).isEqualTo(themeResponses.get(0).id());
 			softly.assertThat(responseEntity.getBody().get(0).name()).isEqualTo(themeResponses.get(0).name());
-			softly.assertThat(responseEntity.getBody().get(0).description()).isEqualTo(themeResponses.get(0).description());
+			softly.assertThat(responseEntity.getBody().get(0).description())
+				.isEqualTo(themeResponses.get(0).description());
 			softly.assertThat(responseEntity.getBody().get(0).thumbnail()).isEqualTo(themeResponses.get(0).thumbnail());
 		});
 	}
