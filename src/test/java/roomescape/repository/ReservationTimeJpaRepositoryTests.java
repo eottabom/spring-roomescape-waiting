@@ -58,7 +58,7 @@ class ReservationTimeJpaRepositoryTests extends AbstractRepositoryTests {
 	@Test
 	void findReservationTimeById() {
 		// given
-		createReservationsWithReservationTime(1L, "10:00");
+		createReservationWithReservationTime(1L, "10:00");
 
 		// when
 		Optional<ReservationTime> foundReservationTime = this.reservationTimeJpaRepository.findById(1L);
@@ -73,9 +73,9 @@ class ReservationTimeJpaRepositoryTests extends AbstractRepositoryTests {
 	@Test
 	void findReservedTimeIds() {
 		// given
-		createReservationsWithReservationTime(1L, "10:00");
-		createReservationsWithReservationTime(2L, "10:05");
-		createReservationsWithReservationTime(3L, "10:10");
+		createReservationWithReservationTime(1L, "10:00");
+		createReservationWithReservationTime(2L, "10:05");
+		createReservationWithReservationTime(3L, "10:10");
 		long themeId = 1L;
 		List<Long> expectedIds = Arrays.asList(1L, 2L, 3L);
 
@@ -92,7 +92,7 @@ class ReservationTimeJpaRepositoryTests extends AbstractRepositoryTests {
 	@Test
 	void existsById() {
 		// given
-		createReservationsWithReservationTime(1L, "10:00");
+		createReservationWithReservationTime(1L, "10:00");
 
 		// when
 		var existsById = this.reservationTimeJpaRepository.existsById(1L);

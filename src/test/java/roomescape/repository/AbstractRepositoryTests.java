@@ -103,7 +103,7 @@ public abstract class AbstractRepositoryTests {
 		return ReservationTime.builder().id(id).startAt(startAt).build();
 	}
 
-	void createReservationsWithReservationTime(Long reservationTimeId, String startAt) {
+	void createReservationWithReservationTime(Long reservationTimeId, String startAt) {
 
 		ReservationTime reservationTime = generateReservationTime(reservationTimeId, startAt);
 		var savedReservationTime = this.reservationTimeJpaRepository.save(reservationTime);
