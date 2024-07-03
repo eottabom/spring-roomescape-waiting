@@ -71,15 +71,6 @@ public class ReservationService {
 		return createReservation(createReservationRequest);
 	}
 
-	@Transactional
-	public void cancel(long id) {
-		var isExist = this.reservationJpaRepository.existsById(id);
-		if (!isExist) {
-			throw new RoomEscapeException(ErrorCode.NOT_FOUND_RESERVATION);
-		}
-		this.reservationJpaRepository.deleteById(id);
-	}
-
 	private ReservationResponse createReservation(CreateReservationRequest createReservationRequest) {
 		var reservationTime = this.reservationTimeService.getReservationTimeById(createReservationRequest.getTimeId());
 		var date = createReservationRequest.getDate();
@@ -118,16 +109,25 @@ public class ReservationService {
 		}
 	}
 
-	@Transactional(readOnly = true)
-	public List<ReservationResponse> searchReservations(ReservationSearchRequest request) {
-		return ReservationResponse.from(this.reservationJpaRepository.findReservations(request.memberId(),
-				request.themeId(), request.dateFrom(), request.dateTo()));
-	}
-
 	private boolean checkReservationExists(String date, ReservationTime time, Long themeId) {
 		List<Reservation> existsReservations = this.reservationJpaRepository.findByDateAndTimeAndThemeId(date, time,
 				themeId);
 		return !existsReservations.isEmpty();
+	}
+
+	@Transactional
+	public void cancel(long id) {
+		var isExist = this.reservationJpaRepository.existsById(id);
+		if (!isExist) {
+			throw new RoomEscapeException(ErrorCode.NOT_FOUND_RESERVATION);
+		}
+		this.reservationJpaRepository.deleteById(id);
+	}
+
+	@Transactional(readOnly = true)
+	public List<ReservationResponse> searchReservations(ReservationSearchRequest request) {
+		return ReservationResponse.from(this.reservationJpaRepository.findReservations(request.memberId(),
+				request.themeId(), request.dateFrom(), request.dateTo()));
 	}
 
 }
