@@ -1,8 +1,5 @@
 package roomescape.repository;
 
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-
 import org.assertj.core.api.SoftAssertions;
 import roomescape.DataTimeFormatterUtils;
 import roomescape.domain.Member;
@@ -45,7 +42,7 @@ public abstract class AbstractRepositoryTests {
 		var savedTheme = this.themeJpaRepository.save(theme);
 
 		// then
-		SoftAssertions.assertSoftly(softly -> {
+		SoftAssertions.assertSoftly((softly) -> {
 			softly.assertThat(savedTheme).isNotNull();
 			softly.assertThat(savedTheme.getId()).isNotNull();
 			softly.assertThat(savedTheme.getName()).isEqualTo("테마1");
@@ -73,11 +70,11 @@ public abstract class AbstractRepositoryTests {
 	void createReservation(Theme theme, ReservationTime reservationTime) {
 		// given
 		var member = Member.builder()
-				.id(1L)
-				.name("tester")
-				.email("tester@gmail.com")
-				.role(MemberRole.USER.name())
-				.build();
+			.id(1L)
+			.name("tester")
+			.email("tester@gmail.com")
+			.role(MemberRole.USER.name())
+			.build();
 
 		Reservation reservation = Reservation.builder()
 			.name("tester")
@@ -118,7 +115,6 @@ public abstract class AbstractRepositoryTests {
 
 		createAndSaveReservation(foundTheme, savedReservationTime);
 	}
-
 
 	private void assertReservationTime(ReservationTime savedReservationTime, String expectedStartTime) {
 		assertThat(savedReservationTime).isNotNull();
