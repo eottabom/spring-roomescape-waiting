@@ -17,6 +17,8 @@ import roomescape.web.controller.dto.ReservationAdminRequest;
 import roomescape.web.controller.dto.ReservationRequest;
 import roomescape.web.controller.dto.ReservationResponse;
 import roomescape.web.controller.dto.ReservationSearchRequest;
+import roomescape.web.controller.dto.ReservationWaitingRequest;
+import roomescape.web.controller.dto.WaitingResponse;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -128,6 +130,31 @@ public class ReservationService {
 	public List<ReservationResponse> searchReservations(ReservationSearchRequest request) {
 		return ReservationResponse.from(this.reservationJpaRepository.findReservations(request.memberId(),
 				request.themeId(), request.dateFrom(), request.dateTo()));
+	}
+
+	@Transactional
+	public WaitingResponse createReservationWaiting(ReservationWaitingRequest request, LoginMember loginMember) {
+		var member = this.memberService.findByEmail(loginMember.getEmail());
+		var date = request.date();
+		var reservationTime = this.reservationTimeService.getReservationTimeById(request.timeId());
+		var themeId = request.themeId();
+		var theme = this.themeService.getThemeById(themeId);
+
+		var reservationStatus = checkReservationExists(date, reservationTime, themeId) ? ReservationStatus.WAITING
+				: ReservationStatus.RESERVATION;
+
+		var reservation = Reservation.builder()
+				.name(loginMember.getName())
+				.date(date)
+				.time(reservationTime)
+				.theme(theme)
+				.status(reservationStatus.name())
+				.member(member)
+				.build();
+
+		var savedReservation = this.reservationJpaRepository.save(reservation);
+
+		return WaitingResponse.from(savedReservation, member.getId());
 	}
 
 }

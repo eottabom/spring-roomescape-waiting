@@ -202,4 +202,25 @@ class ReservationJpaRepositoryTests extends AbstractRepositoryTests {
 		assertThat(existsReservations).isEmpty();
 	}
 
+	@Test
+	void findReservationsWithRankByMemberName() {
+		// given
+		createThemeAndReservationTimeAndReservation();
+		String memberName = "tester";
+
+		// when
+		var foundReservationsWithRank = this.reservationJpaRepository.findReservationsWithRankByMemberName(memberName);
+
+		// then
+		assertThat(foundReservationsWithRank).isNotEmpty();
+		assertThat(foundReservationsWithRank).allSatisfy((reservationWithRank) -> {
+			assertThat(reservationWithRank.reservation().getId()).isEqualTo(1L);
+			assertThat(reservationWithRank.reservation().getName()).isEqualTo("tester");
+			assertThat(reservationWithRank.reservation().getDate()).isEqualTo("2024-06-06");
+			assertThat(reservationWithRank.reservation().getTime().getStartAt()).isEqualTo("10:00");
+			assertThat(reservationWithRank.reservation().getTheme().getName()).isEqualTo("테마1");
+			assertThat(reservationWithRank.rank()).isEqualTo(0L);
+		});
+	}
+
 }
