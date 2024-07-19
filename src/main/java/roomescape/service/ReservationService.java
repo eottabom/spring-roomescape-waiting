@@ -1,8 +1,5 @@
 package roomescape.service;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import roomescape.domain.LoginMember;
@@ -78,7 +75,8 @@ public class ReservationService {
 		var date = createReservationRequest.getDate();
 		var themeId = createReservationRequest.getThemeId();
 
-		checkReservationAvailability(date, reservationTime.getStartAt(), themeId);
+		Reservation.checkReservationAvailability(date, reservationTime.getStartAt());
+		checkDuplicateReservation(date, themeId);
 
 		var theme = this.themeService.getThemeById(themeId);
 		var reservationStatus = checkReservationExists(date, reservationTime, themeId) ? ReservationStatus.WAITING
@@ -98,14 +96,7 @@ public class ReservationService {
 		return ReservationResponse.from(savedReservation, reservationTime, theme);
 	}
 
-	private void checkReservationAvailability(String date, String time, long themeId) {
-		LocalDate reservationDate = LocalDate.parse(date);
-		LocalTime reservationTime = LocalTime.parse(time, DateTimeFormatter.ofPattern("HH:mm"));
-		if (reservationDate.isBefore(LocalDate.now())
-				|| (reservationDate.isEqual(LocalDate.now()) && reservationTime.isBefore(LocalTime.now()))) {
-			throw new RoomEscapeException(ErrorCode.PAST_RESERVATION);
-		}
-
+	private void checkDuplicateReservation(String date, long themeId) {
 		if (this.reservationJpaRepository.isDuplicateReservation(date, themeId)) {
 			throw new RoomEscapeException(ErrorCode.DUPLICATE_RESERVATION);
 		}
@@ -140,17 +131,14 @@ public class ReservationService {
 		var themeId = request.themeId();
 		var theme = this.themeService.getThemeById(themeId);
 
-		var reservationStatus = checkReservationExists(date, reservationTime, themeId) ? ReservationStatus.WAITING
-				: ReservationStatus.RESERVATION;
-
 		var reservation = Reservation.builder()
-				.name(loginMember.getName())
-				.date(date)
-				.time(reservationTime)
-				.theme(theme)
-				.status(reservationStatus.name())
-				.member(member)
-				.build();
+			.name(loginMember.getName())
+			.date(date)
+			.time(reservationTime)
+			.theme(theme)
+			.status(ReservationStatus.WAITING.name())
+			.member(member)
+			.build();
 
 		var savedReservation = this.reservationJpaRepository.save(reservation);
 
