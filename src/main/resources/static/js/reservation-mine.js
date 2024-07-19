@@ -1,7 +1,8 @@
+const RESERVATION_MINE_API_ENDPOINT = '/reservations-mine';
 const RESERVATION_API_ENDPOINT = '/reservations';
 document.addEventListener('DOMContentLoaded', () => {
 
-    fetch(RESERVATION_API_ENDPOINT) // 내 예약 목록 조회 API 호출
+    fetch(RESERVATION_MINE_API_ENDPOINT) // 내 예약 목록 조회 API 호출
         .then(response => {
             if (response.status === 200) return response.json();
             throw new Error('Read failed');
@@ -23,7 +24,7 @@ function render(data) {
         let status = item.status;
 
         if (status === '예약 대기') {
-            status = item.watingOrder + ' 번째' + item.status;
+            status = item.waitingOrder + ' 번째 ' + item.status;
         }
 
         row.insertCell(0).textContent = theme;

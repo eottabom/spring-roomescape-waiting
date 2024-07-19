@@ -1,5 +1,9 @@
 document.addEventListener('DOMContentLoaded', function () {
-  updateUIBasedOnLogin();
+    if (window.location.pathname !== '/signup') {
+        updateUIBasedOnLogin();
+    }
+    const form = document.getElementById('signup-form');
+    form.addEventListener('submit', register);
 });
 
 document.getElementById('logout-btn').addEventListener('click', function (event) {
