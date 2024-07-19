@@ -17,6 +17,9 @@ class ReservationIntegrationTests extends AbstractIntegrationTests {
 		// create reservation
 		var reservationResponse = createReservation();
 
+		// create reservation waiting
+		var waitingResponse = createReservationWaiting();
+
 		// get reservations
 		getReservations();
 
@@ -24,6 +27,7 @@ class ReservationIntegrationTests extends AbstractIntegrationTests {
 		getReservationsMine();
 
 		// cancel reservation
+		cancelReservation(waitingResponse.id());
 		cancelReservation(reservationResponse.id());
 
 		// check reservation

@@ -27,6 +27,7 @@ import roomescape.web.controller.dto.ReservationAdminRequest;
 import roomescape.web.controller.dto.ReservationRequest;
 import roomescape.web.controller.dto.ReservationResponse;
 import roomescape.web.controller.dto.ReservationSearchRequest;
+import roomescape.web.controller.dto.ReservationWaitingRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -34,6 +35,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 class ReservationServiceTests {
 
@@ -196,7 +199,7 @@ class ReservationServiceTests {
 		given(this.memberService.findByEmail("tester@gmail.com")).willReturn(foundMember);
 		given(this.reservationTimeService.getReservationTimeById(1L)).willReturn(reservationTime);
 		given(this.themeService.getThemeById(1L)).willReturn(theme);
-		given(this.reservationJpaRepository.findByDateAndTimeAndThemeId("2024-07-04", reservationTime, 1L))
+		given(this.reservationJpaRepository.findByDateAndTimeAndThemeId(DataTimeFormatterUtils.TOMORROW_DATE, reservationTime, 1L))
 			.willReturn(List.of(existingReservation));
 		given(this.reservationJpaRepository.save(any())).willAnswer((invocation) -> {
 			Reservation reservation = invocation.getArgument(0);
@@ -391,6 +394,61 @@ class ReservationServiceTests {
 
 		// then
 		assertThat(searchReservations).isEmpty();
+	}
+
+	@Test
+	void createReservationWaiting() {
+		// given
+		var loginMember = LoginMember.builder()
+			.name("tester")
+			.email("tester@gmail.com")
+			.role(MemberRole.USER.name())
+			.build();
+
+		var reservationWaitingRequest = new ReservationWaitingRequest("2024-06-06", 1L, 1L);
+
+		var foundMember = Member.builder()
+			.id(1L)
+			.name("tester")
+			.email("tester@gmail.com")
+			.password("encodedPassword")
+			.role(MemberRole.USER.name())
+			.build();
+
+		var reservationTime = ReservationTime.builder().id(1L).startAt("10:00").build();
+
+		var theme = Theme.builder().id(1L).name("테마1").description("첫번째테마").thumbnail("테마이미지").build();
+
+		var existingReservation = Reservation.builder()
+			.id(2L)
+			.name("anotherUser")
+			.date("2024-06-06")
+			.time(reservationTime)
+			.theme(theme)
+			.member(foundMember)
+			.status(ReservationStatus.RESERVATION.name())
+			.build();
+
+		given(this.memberService.findByEmail("tester@gmail.com")).willReturn(foundMember);
+		given(this.reservationTimeService.getReservationTimeById(1L)).willReturn(reservationTime);
+		given(this.themeService.getThemeById(1L)).willReturn(theme);
+		given(this.reservationJpaRepository.findByDateAndTimeAndThemeId("2024-06-06", reservationTime, 1L))
+			.willReturn(List.of(existingReservation));
+		given(this.reservationJpaRepository.save(any())).willAnswer((invocation) -> {
+			Reservation reservation = invocation.getArgument(0);
+			reservation.setId(1L);
+			return reservation;
+		});
+
+		// when
+		var waitingResponse = this.reservationService.createReservationWaiting(reservationWaitingRequest, loginMember);
+
+		// then
+		assertThat(waitingResponse).isNotNull();
+		assertThat(waitingResponse.id()).isEqualTo(1L);
+		assertThat(waitingResponse.memberId()).isEqualTo(foundMember.getId());
+		assertThat(waitingResponse.status()).isEqualTo(ReservationStatus.WAITING.name());
+		verify(this.reservationJpaRepository, times(1)).save(any(Reservation.class));
 	}
 
 }

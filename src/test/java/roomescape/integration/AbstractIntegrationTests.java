@@ -7,13 +7,16 @@ import roomescape.DataTimeFormatterUtils;
 import roomescape.auth.JwtCookieManager;
 import roomescape.auth.JwtTokenProvider;
 import roomescape.domain.MemberRole;
+import roomescape.domain.ReservationStatus;
 import roomescape.web.controller.dto.MemberResponse;
 import roomescape.web.controller.dto.ReservationRequest;
 import roomescape.web.controller.dto.ReservationResponse;
 import roomescape.web.controller.dto.ReservationTimeRequest;
 import roomescape.web.controller.dto.ReservationTimeResponse;
+import roomescape.web.controller.dto.ReservationWaitingRequest;
 import roomescape.web.controller.dto.ThemeRequest;
 import roomescape.web.controller.dto.ThemeResponse;
+import roomescape.web.controller.dto.WaitingResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -173,6 +176,30 @@ public abstract class AbstractIntegrationTests {
 
 		// then
 		assertThat(deleteTheme.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+	}
+
+	WaitingResponse createReservationWaiting() {
+		// given
+		var reservationWaitingRequest = new ReservationWaitingRequest("2024-06-06", 1L, 1L);
+		var memberResponse = new MemberResponse(1L, "tester", "tester@gmail.com", MemberRole.USER.name());
+
+		String token = this.jwtTokenProvider.createToken(memberResponse);
+		Cookie cookie = JwtCookieManager.createCookie(token, 3600);
+		HttpHeaders headers = new HttpHeaders();
+		headers.add(HttpHeaders.COOKIE, cookie.getName() + "=" + cookie.getValue());
+
+		HttpEntity<ReservationWaitingRequest> requestEntity = new HttpEntity<>(reservationWaitingRequest, headers);
+
+		// when
+		var createReservationWaiting = this.restTemplate.exchange("http://localhost:" + this.port + "/reservations-mine/waiting",
+				HttpMethod.POST, requestEntity, WaitingResponse.class);
+
+		// then
+		assertThat(createReservationWaiting.getStatusCode()).isEqualTo(HttpStatus.OK);
+		var waitingResponse = createReservationWaiting.getBody();
+		assertThat(waitingResponse).isNotNull();
+		assertThat(waitingResponse.status()).isEqualTo(ReservationStatus.WAITING.name());
+		return waitingResponse;
 	}
 
 }

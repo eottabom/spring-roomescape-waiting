@@ -15,6 +15,7 @@ import roomescape.domain.MemberRole;
 import roomescape.domain.Reservation;
 import roomescape.domain.ReservationStatus;
 import roomescape.domain.ReservationTime;
+import roomescape.domain.ReservationWithRank;
 import roomescape.domain.Theme;
 import roomescape.repository.ReservationJpaRepository;
 
@@ -61,6 +62,12 @@ class ReservationMineServiceTests {
 			.member(member)
 			.status(ReservationStatus.RESERVATION.name())
 			.build();
+
+		List<ReservationWithRank> reservationWithRanks = new ArrayList<>();
+		ReservationWithRank reservationWithRank = new ReservationWithRank(reservation, 1L);
+		reservationWithRanks.add(reservationWithRank);
+
+		given(this.reservationJpaRepository.findReservationsWithRankByMemberName("tester")).willReturn(reservationWithRanks);
 
 		List<Reservation> reservations = new ArrayList<>();
 		reservations.add(reservation);
@@ -110,6 +117,12 @@ class ReservationMineServiceTests {
 			.member(member)
 			.status(ReservationStatus.WAITING.name())
 			.build();
+
+		List<ReservationWithRank> reservationWithRanks = new ArrayList<>();
+		ReservationWithRank reservationWithRank = new ReservationWithRank(reservation, 1L);
+		reservationWithRanks.add(reservationWithRank);
+
+		given(this.reservationJpaRepository.findReservationsWithRankByMemberName("tester")).willReturn(reservationWithRanks);
 
 		List<Reservation> reservations = new ArrayList<>();
 		reservations.add(reservation);
