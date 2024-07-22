@@ -78,10 +78,10 @@ public abstract class AbstractRepositoryTests {
 
 		Reservation reservation = Reservation.builder()
 			.name("tester")
-			.date("2024-06-06")
+			.date(DataTimeFormatterUtils.TOMORROW_DATE)
 			.time(reservationTime)
 			.theme(theme)
-			.status(ReservationStatus.RESERVATION.name())
+			.status(ReservationStatus.RESERVATION)
 			.member(member)
 			.build();
 
@@ -93,7 +93,7 @@ public abstract class AbstractRepositoryTests {
 			softly.assertThat(savedReservation).isNotNull();
 			softly.assertThat(savedReservation.getId()).isNotNull();
 			softly.assertThat(savedReservation.getName()).isEqualTo("tester");
-			softly.assertThat(savedReservation.getDate()).isEqualTo("2024-06-06");
+			softly.assertThat(savedReservation.getDate()).isEqualTo(DataTimeFormatterUtils.TOMORROW_DATE);
 			softly.assertThat(savedReservation.getTheme()).isEqualTo(theme);
 			softly.assertThat(savedReservation.getTime()).isEqualTo(reservationTime);
 		});

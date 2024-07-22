@@ -1,9 +1,7 @@
 package roomescape.service;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 
 import roomescape.domain.LoginMember;
 import roomescape.domain.Reservation;
@@ -17,6 +15,8 @@ import roomescape.web.controller.dto.ReservationAdminRequest;
 import roomescape.web.controller.dto.ReservationRequest;
 import roomescape.web.controller.dto.ReservationResponse;
 import roomescape.web.controller.dto.ReservationSearchRequest;
+import roomescape.web.controller.dto.ReservationWaitingRequest;
+import roomescape.web.controller.dto.WaitingResponse;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -76,8 +76,6 @@ public class ReservationService {
 		var date = createReservationRequest.getDate();
 		var themeId = createReservationRequest.getThemeId();
 
-		checkReservationAvailability(date, reservationTime.getStartAt(), themeId);
-
 		var theme = this.themeService.getThemeById(themeId);
 		var reservationStatus = checkReservationExists(date, reservationTime, themeId) ? ReservationStatus.WAITING
 				: ReservationStatus.RESERVATION;
@@ -87,26 +85,13 @@ public class ReservationService {
 			.date(date)
 			.time(reservationTime)
 			.theme(theme)
-			.status(reservationStatus.name())
+			.status(reservationStatus)
 			.member(createReservationRequest.getMember())
 			.build();
 
 		var savedReservation = this.reservationJpaRepository.save(reservation);
 
 		return ReservationResponse.from(savedReservation, reservationTime, theme);
-	}
-
-	private void checkReservationAvailability(String date, String time, long themeId) {
-		LocalDate reservationDate = LocalDate.parse(date);
-		LocalTime reservationTime = LocalTime.parse(time, DateTimeFormatter.ofPattern("HH:mm"));
-		if (reservationDate.isBefore(LocalDate.now())
-				|| (reservationDate.isEqual(LocalDate.now()) && reservationTime.isBefore(LocalTime.now()))) {
-			throw new RoomEscapeException(ErrorCode.PAST_RESERVATION);
-		}
-
-		if (this.reservationJpaRepository.isDuplicateReservation(date, themeId)) {
-			throw new RoomEscapeException(ErrorCode.DUPLICATE_RESERVATION);
-		}
 	}
 
 	private boolean checkReservationExists(String date, ReservationTime time, Long themeId) {
@@ -122,12 +107,45 @@ public class ReservationService {
 			throw new RoomEscapeException(ErrorCode.NOT_FOUND_RESERVATION);
 		}
 		this.reservationJpaRepository.deleteById(id);
+
+		Optional<Reservation> earliestReservation = this.reservationJpaRepository.findEarliestWaitingReservation();
+		earliestReservation.ifPresent((reservation) -> {
+			reservation.setStatus(ReservationStatus.RESERVATION);
+			this.reservationJpaRepository.save(reservation);
+		});
 	}
 
 	@Transactional(readOnly = true)
 	public List<ReservationResponse> searchReservations(ReservationSearchRequest request) {
 		return ReservationResponse.from(this.reservationJpaRepository.findReservations(request.memberId(),
 				request.themeId(), request.dateFrom(), request.dateTo()));
+	}
+
+	@Transactional
+	public WaitingResponse createReservationWaiting(ReservationWaitingRequest request, LoginMember loginMember) {
+		var member = this.memberService.findByEmail(loginMember.getEmail());
+		var date = request.date();
+		var reservationTime = this.reservationTimeService.getReservationTimeById(request.timeId());
+		var themeId = request.themeId();
+		var theme = this.themeService.getThemeById(themeId);
+
+		if (this.reservationJpaRepository.existsByMemberAndDateAndTimeAndThemeAndStatus(member.getId(), date,
+				reservationTime.getId(), themeId, ReservationStatus.WAITING)) {
+			throw new RoomEscapeException(ErrorCode.DUPLICATE_RESERVATION);
+		}
+
+		var reservation = Reservation.builder()
+			.name(loginMember.getName())
+			.date(date)
+			.time(reservationTime)
+			.theme(theme)
+			.status(ReservationStatus.WAITING)
+			.member(member)
+			.build();
+
+		var savedReservation = this.reservationJpaRepository.save(reservation);
+
+		return WaitingResponse.from(savedReservation, member.getId());
 	}
 
 }

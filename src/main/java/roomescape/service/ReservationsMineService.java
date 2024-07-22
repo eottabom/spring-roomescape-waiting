@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import roomescape.domain.LoginMember;
-import roomescape.domain.Reservation;
+import roomescape.domain.ReservationWithRank;
 import roomescape.repository.ReservationJpaRepository;
 import roomescape.web.controller.dto.ReservationsMineResponse;
 
@@ -20,10 +20,12 @@ public class ReservationsMineService {
 	}
 
 	public List<ReservationsMineResponse> getReservationsMine(LoginMember loginMember) {
-		List<Reservation> reservations = this.reservationJpaRepository.findByName(loginMember.getName());
-		return reservations.stream()
-				.map(ReservationsMineResponse::from)
-				.collect(Collectors.toList());
+		List<ReservationWithRank> reservationWithRanks = this.reservationJpaRepository
+			.findReservationsWithRankByMemberName(loginMember.getName());
+		return reservationWithRanks.stream()
+			.map((reservationWithRank) -> ReservationsMineResponse.from(reservationWithRank.reservation(),
+					reservationWithRank.rank()))
+			.collect(Collectors.toList());
 	}
 
 }

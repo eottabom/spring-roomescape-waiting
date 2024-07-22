@@ -1,5 +1,8 @@
 package roomescape.domain;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 import jakarta.persistence.Entity;
@@ -9,6 +12,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import roomescape.exception.ErrorCode;
+import roomescape.exception.RoomEscapeException;
 
 @Entity
 public class Reservation {
@@ -33,7 +38,7 @@ public class Reservation {
 	@JoinColumn(name = "member_id")
 	private Member member;
 
-	private String status;
+	private ReservationStatus status;
 
 	public static Builder builder() {
 		return new Builder();
@@ -67,8 +72,22 @@ public class Reservation {
 		return this.member;
 	}
 
-	public String getStatus() {
+	public ReservationStatus getStatus() {
 		return this.status;
+	}
+
+	public void setStatus(ReservationStatus status) {
+		this.status = status;
+	}
+
+	private static void checkReservationAvailability(String date, String time) {
+		LocalDate reservationDate = LocalDate.parse(date);
+		LocalTime reservationTime = LocalTime.parse(time, DateTimeFormatter.ofPattern("HH:mm"));
+
+		if (reservationDate.isBefore(LocalDate.now())
+				|| (reservationDate.isEqual(LocalDate.now()) && reservationTime.isBefore(LocalTime.now()))) {
+			throw new RoomEscapeException(ErrorCode.PAST_RESERVATION);
+		}
 	}
 
 	@Override
@@ -141,12 +160,13 @@ public class Reservation {
 			return this;
 		}
 
-		public Builder status(String status) {
+		public Builder status(ReservationStatus status) {
 			this.reservation.status = status;
 			return this;
 		}
 
 		public Reservation build() {
+			checkReservationAvailability(this.reservation.date, this.reservation.time.getStartAt());
 			return this.reservation;
 		}
 
