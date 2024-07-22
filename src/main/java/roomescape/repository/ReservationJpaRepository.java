@@ -3,6 +3,7 @@ package roomescape.repository;
 import java.util.List;
 
 import roomescape.domain.Reservation;
+import roomescape.domain.ReservationStatus;
 import roomescape.domain.ReservationTime;
 import roomescape.domain.ReservationWithRank;
 
@@ -57,6 +58,6 @@ public interface ReservationJpaRepository extends JpaRepository<Reservation, Lon
 			AND r.status = :status
 			""")
 	boolean existsByMemberAndDateAndTimeAndThemeAndStatus(@Param("memberId") Long memberId, @Param("date") String date,
-			@Param("timeId") Long timeId, @Param("themeId") Long themeId, @Param("status") String status);
+			@Param("timeId") Long timeId, @Param("themeId") Long themeId, @Param("status") ReservationStatus status);
 
 }

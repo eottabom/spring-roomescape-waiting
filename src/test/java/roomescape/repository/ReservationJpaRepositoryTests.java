@@ -1,10 +1,13 @@
 package roomescape.repository;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
+import roomescape.DataTimeFormatterUtils;
 import roomescape.domain.Reservation;
 import roomescape.domain.ReservationStatus;
 import roomescape.domain.ReservationTime;
@@ -41,7 +44,7 @@ class ReservationJpaRepositoryTests extends AbstractRepositoryTests {
 			assertThat(reservation).isNotNull();
 			assertThat(reservation.getId()).isEqualTo(1L);
 			assertThat(reservation.getName()).isEqualTo("tester");
-			assertThat(reservation.getDate()).isEqualTo("2024-06-06");
+			assertThat(reservation.getDate()).isEqualTo(DataTimeFormatterUtils.TOMORROW_DATE);
 			assertThat(reservation.getTheme()).isEqualTo(theme);
 			assertThat(reservation.getTime()).isEqualTo(reservationTime);
 		});
@@ -59,7 +62,7 @@ class ReservationJpaRepositoryTests extends AbstractRepositoryTests {
 		Reservation reservation = Reservation.builder()
 			.id(1L)
 			.name("tester")
-			.date("2024-06-06")
+			.date(DataTimeFormatterUtils.TOMORROW_DATE)
 			.time(reservationTime)
 			.theme(theme)
 			.build();
@@ -74,7 +77,7 @@ class ReservationJpaRepositoryTests extends AbstractRepositoryTests {
 			softly.assertThat(savedReservation).isNotNull();
 			softly.assertThat(savedReservation.getId()).isEqualTo(1L);
 			softly.assertThat(savedReservation.getName()).isEqualTo("tester");
-			softly.assertThat(savedReservation.getDate()).isEqualTo("2024-06-06");
+			softly.assertThat(savedReservation.getDate()).isEqualTo(DataTimeFormatterUtils.TOMORROW_DATE);
 			softly.assertThat(savedReservation.getTheme()).isEqualTo(theme);
 			softly.assertThat(savedReservation.getTime()).isEqualTo(reservationTime);
 		});
@@ -106,8 +109,8 @@ class ReservationJpaRepositoryTests extends AbstractRepositoryTests {
 
 		long memberId = 1L;
 		long themeId = 1L;
-		String dateFrom = "2024-06-01";
-		String dateTo = "2024-06-30";
+		String dateFrom = LocalDate.now().minusMonths(1L).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+		String dateTo = LocalDate.now().plusMonths(1L).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
 		ReservationTime reservationTime = ReservationTime.builder().id(1L).startAt("10:00").build();
 		Theme theme = Theme.builder().id(1L).name("테마1").description("첫번째테마").thumbnail("테마이미지").build();
@@ -115,7 +118,7 @@ class ReservationJpaRepositoryTests extends AbstractRepositoryTests {
 		Reservation reservation = Reservation.builder()
 			.id(1L)
 			.name("tester")
-			.date("2024-06-06")
+			.date(DataTimeFormatterUtils.TOMORROW_DATE)
 			.time(reservationTime)
 			.theme(theme)
 			.build();
@@ -130,7 +133,7 @@ class ReservationJpaRepositoryTests extends AbstractRepositoryTests {
 		assertThat(foundReservations).allSatisfy((resultReservation) -> {
 			assertThat(resultReservation.getName()).isEqualTo("tester");
 			assertThat(resultReservation.getTheme().getId()).isEqualTo(1L);
-			assertThat(resultReservation.getDate()).isBetween("2024-06-01", "2024-06-30");
+			assertThat(resultReservation.getDate()).isBetween(dateFrom, dateTo);
 		});
 	}
 
@@ -140,7 +143,7 @@ class ReservationJpaRepositoryTests extends AbstractRepositoryTests {
 		createThemeAndReservationTimeAndReservation();
 
 		// when
-		var duplicateReservation = this.reservationJpaRepository.isDuplicateReservation("2024-06-06", 1L);
+		var duplicateReservation = this.reservationJpaRepository.isDuplicateReservation(DataTimeFormatterUtils.TOMORROW_DATE, 1L);
 
 		// then
 		assertThat(duplicateReservation).isTrue();
@@ -161,10 +164,10 @@ class ReservationJpaRepositoryTests extends AbstractRepositoryTests {
 		assertThat(foundReservationByUserName).allSatisfy((reservationsMineResponse) -> {
 			assertThat(reservationsMineResponse.getId()).isEqualTo(1L);
 			assertThat(reservationsMineResponse.getName()).isEqualTo("tester");
-			assertThat(reservationsMineResponse.getDate()).isEqualTo("2024-06-06");
+			assertThat(reservationsMineResponse.getDate()).isEqualTo(DataTimeFormatterUtils.TOMORROW_DATE);
 			assertThat(reservationsMineResponse.getTime().getStartAt()).isEqualTo("10:00");
 			assertThat(reservationsMineResponse.getTheme().getName()).isEqualTo("테마1");
-			assertThat(reservationsMineResponse.getStatus()).isEqualTo(ReservationStatus.RESERVATION.name());
+			assertThat(reservationsMineResponse.getStatus()).isEqualTo(ReservationStatus.RESERVATION);
 		});
 	}
 
@@ -176,17 +179,17 @@ class ReservationJpaRepositoryTests extends AbstractRepositoryTests {
 		var reservationTime = ReservationTime.builder().id(1L).startAt("10:00").build();
 
 		// when
-		var existsReservations = this.reservationJpaRepository.findByDateAndTimeAndThemeId("2024-06-06",
+		var existsReservations = this.reservationJpaRepository.findByDateAndTimeAndThemeId(DataTimeFormatterUtils.TOMORROW_DATE,
 				reservationTime, 1L);
 
 		assertThat(existsReservations).isNotEmpty();
 		assertThat(existsReservations).allSatisfy((reservation) -> {
 			assertThat(reservation.getId()).isEqualTo(1L);
 			assertThat(reservation.getName()).isEqualTo("tester");
-			assertThat(reservation.getDate()).isEqualTo("2024-06-06");
+			assertThat(reservation.getDate()).isEqualTo(DataTimeFormatterUtils.TOMORROW_DATE);
 			assertThat(reservation.getTime().getStartAt()).isEqualTo("10:00");
 			assertThat(reservation.getTheme().getName()).isEqualTo("테마1");
-			assertThat(reservation.getStatus()).isEqualTo(ReservationStatus.RESERVATION.name());
+			assertThat(reservation.getStatus()).isEqualTo(ReservationStatus.RESERVATION);
 		});
 	}
 
@@ -216,7 +219,7 @@ class ReservationJpaRepositoryTests extends AbstractRepositoryTests {
 		assertThat(foundReservationsWithRank).allSatisfy((reservationWithRank) -> {
 			assertThat(reservationWithRank.reservation().getId()).isEqualTo(1L);
 			assertThat(reservationWithRank.reservation().getName()).isEqualTo("tester");
-			assertThat(reservationWithRank.reservation().getDate()).isEqualTo("2024-06-06");
+			assertThat(reservationWithRank.reservation().getDate()).isEqualTo(DataTimeFormatterUtils.TOMORROW_DATE);
 			assertThat(reservationWithRank.reservation().getTime().getStartAt()).isEqualTo("10:00");
 			assertThat(reservationWithRank.reservation().getTheme().getName()).isEqualTo("테마1");
 			assertThat(reservationWithRank.rank()).isEqualTo(0L);

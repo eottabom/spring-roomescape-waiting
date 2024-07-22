@@ -457,8 +457,7 @@ class ReservationServiceTests {
 
 		// given
 		given(this.reservationJpaRepository.existsByMemberAndDateAndTimeAndThemeAndStatus(foundMember.getId(),
-				DataTimeFormatterUtils.TOMORROW_DATE, reservationTime.getId(), 1L,
-				String.valueOf(ReservationStatus.WAITING)))
+				DataTimeFormatterUtils.TOMORROW_DATE, reservationTime.getId(), 1L, ReservationStatus.WAITING))
 			.willReturn(true);
 
 		// when, then

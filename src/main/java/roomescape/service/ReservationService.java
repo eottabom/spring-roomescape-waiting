@@ -131,7 +131,7 @@ public class ReservationService {
 		var theme = this.themeService.getThemeById(themeId);
 
 		if (this.reservationJpaRepository.existsByMemberAndDateAndTimeAndThemeAndStatus(member.getId(), date,
-				reservationTime.getId(), themeId, String.valueOf(ReservationStatus.WAITING))) {
+				reservationTime.getId(), themeId, ReservationStatus.WAITING)) {
 			throw new RoomEscapeException(ErrorCode.DUPLICATE_RESERVATION);
 		}
 

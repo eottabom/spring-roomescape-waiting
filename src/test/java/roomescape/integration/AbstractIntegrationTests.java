@@ -180,7 +180,7 @@ public abstract class AbstractIntegrationTests {
 
 	WaitingResponse createReservationWaiting() {
 		// given
-		var reservationWaitingRequest = new ReservationWaitingRequest("2024-06-06", 1L, 1L);
+		var reservationWaitingRequest = new ReservationWaitingRequest(DataTimeFormatterUtils.TOMORROW_DATE, 1L, 1L);
 		var memberResponse = new MemberResponse(1L, "tester", "tester@gmail.com", MemberRole.USER.name());
 
 		String token = this.jwtTokenProvider.createToken(memberResponse);
