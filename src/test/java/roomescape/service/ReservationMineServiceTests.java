@@ -60,7 +60,7 @@ class ReservationMineServiceTests {
 			.time(reservationTime)
 			.theme(theme)
 			.member(member)
-			.status(ReservationStatus.RESERVATION.name())
+			.status(ReservationStatus.RESERVATION)
 			.build();
 
 		List<ReservationWithRank> reservationWithRanks = new ArrayList<>();
@@ -115,7 +115,7 @@ class ReservationMineServiceTests {
 			.time(reservationTime)
 			.theme(theme)
 			.member(member)
-			.status(ReservationStatus.WAITING.name())
+			.status(ReservationStatus.WAITING)
 			.build();
 
 		List<ReservationWithRank> reservationWithRanks = new ArrayList<>();

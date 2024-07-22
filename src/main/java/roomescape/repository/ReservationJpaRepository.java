@@ -46,4 +46,17 @@ public interface ReservationJpaRepository extends JpaRepository<Reservation, Lon
 			WHERE r.name = :memberName
 			""")
 	List<ReservationWithRank> findReservationsWithRankByMemberName(@Param("memberName") String memberName);
+
+	@Query("""
+			SELECT COUNT(r) > 0
+			FROM Reservation r
+			WHERE r.member.id = :memberId
+			AND r.date = :date
+			AND r.time.id = :timeId
+			AND r.theme.id = :themeId
+			AND r.status = :status
+			""")
+	boolean existsByMemberAndDateAndTimeAndThemeAndStatus(@Param("memberId") Long memberId, @Param("date") String date,
+			@Param("timeId") Long timeId, @Param("themeId") Long themeId, @Param("status") String status);
+
 }

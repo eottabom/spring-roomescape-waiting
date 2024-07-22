@@ -1,5 +1,7 @@
 package roomescape.service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -80,11 +82,11 @@ class ReservationServiceTests {
 		var reservation = Reservation.builder()
 			.id(1L)
 			.name("tester")
-			.date("2024-06-06")
+			.date(DataTimeFormatterUtils.TOMORROW_DATE)
 			.time(reservationTime)
 			.theme(theme)
 			.member(member)
-			.status(ReservationStatus.RESERVATION.name())
+			.status(ReservationStatus.RESERVATION)
 			.build();
 		reservations.add(reservation);
 
@@ -99,7 +101,7 @@ class ReservationServiceTests {
 		assertThat(resultReservations).allSatisfy((reservationResponse) -> {
 			assertThat(reservationResponse.id()).isEqualTo(1L);
 			assertThat(reservationResponse.name()).isEqualTo("tester");
-			assertThat(reservationResponse.date()).isEqualTo("2024-06-06");
+			assertThat(reservationResponse.date()).isEqualTo(DataTimeFormatterUtils.TOMORROW_DATE);
 			assertThat(reservationResponse.time().id()).isEqualTo(1L);
 			assertThat(reservationResponse.time().startAt()).isEqualTo("10:00");
 			assertThat(reservationResponse.theme().id()).isEqualTo(1L);
@@ -133,11 +135,11 @@ class ReservationServiceTests {
 		var reservation = Reservation.builder()
 			.id(1L)
 			.name("tester")
-			.date("2024-06-06")
+			.date(DataTimeFormatterUtils.TOMORROW_DATE)
 			.time(reservationTime)
 			.theme(theme)
 			.member(member)
-			.status(ReservationStatus.RESERVATION.name())
+			.status(ReservationStatus.RESERVATION)
 			.build();
 
 		given(this.themeService.getThemeById(1L)).willReturn(theme);
@@ -151,7 +153,7 @@ class ReservationServiceTests {
 		assertThat(createdReservation).isNotNull();
 		assertThat(createdReservation.id()).isEqualTo(1L);
 		assertThat(createdReservation.name()).isEqualTo("tester");
-		assertThat(createdReservation.date()).isEqualTo("2024-06-06");
+		assertThat(createdReservation.date()).isEqualTo(DataTimeFormatterUtils.TOMORROW_DATE);
 		assertThat(createdReservation.time()).isNotNull();
 		assertThat(createdReservation.time().id()).isEqualTo(1L);
 		assertThat(createdReservation.time().startAt()).isEqualTo("10:00");
@@ -189,23 +191,24 @@ class ReservationServiceTests {
 		var existingReservation = Reservation.builder()
 			.id(2L)
 			.name("anotherUser")
-			.date("2024-07-04")
+			.date(DataTimeFormatterUtils.TOMORROW_DATE)
 			.time(reservationTime)
 			.theme(theme)
 			.member(foundMember)
-			.status(ReservationStatus.RESERVATION.name())
+			.status(ReservationStatus.RESERVATION)
 			.build();
 
 		given(this.memberService.findByEmail("tester@gmail.com")).willReturn(foundMember);
 		given(this.reservationTimeService.getReservationTimeById(1L)).willReturn(reservationTime);
 		given(this.themeService.getThemeById(1L)).willReturn(theme);
-		given(this.reservationJpaRepository.findByDateAndTimeAndThemeId(DataTimeFormatterUtils.TOMORROW_DATE, reservationTime, 1L))
+		given(this.reservationJpaRepository.findByDateAndTimeAndThemeId(DataTimeFormatterUtils.TOMORROW_DATE,
+				reservationTime, 1L))
 			.willReturn(List.of(existingReservation));
 		given(this.reservationJpaRepository.save(any())).willAnswer((invocation) -> {
 			Reservation reservation = invocation.getArgument(0);
 
 			// then
-			assertThat(reservation.getStatus()).isEqualTo(ReservationStatus.WAITING.name());
+			assertThat(reservation.getStatus()).isEqualTo(ReservationStatus.WAITING);
 			reservation.setId(1L);
 			return reservation;
 		});
@@ -272,11 +275,11 @@ class ReservationServiceTests {
 		var reservation = Reservation.builder()
 			.id(1L)
 			.name("tester")
-			.date("2024-06-06")
+			.date(DataTimeFormatterUtils.TOMORROW_DATE)
 			.time(reservationTime)
 			.theme(theme)
 			.member(member)
-			.status(ReservationStatus.RESERVATION.name())
+			.status(ReservationStatus.RESERVATION)
 			.build();
 
 		given(this.themeService.getThemeById(1L)).willReturn(theme);
@@ -335,8 +338,8 @@ class ReservationServiceTests {
 		// given
 		long memberId = 1L;
 		long themeId = 1L;
-		String dateFrom = "2024-06-01";
-		String dateTo = "2024-06-30";
+		String dateFrom = LocalDate.now().minusMonths(1L).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+		String dateTo = LocalDate.now().plusMonths(1L).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
 		var reservationTime = ReservationTime.builder().id(1L).startAt("10:00").build();
 		var theme = Theme.builder().id(1L).name("테마1").description("첫번째테마").thumbnail("테마이미지").build();
@@ -350,11 +353,11 @@ class ReservationServiceTests {
 		var reservation = Reservation.builder()
 			.id(1L)
 			.name("tester")
-			.date("2024-06-06")
+			.date(DataTimeFormatterUtils.TOMORROW_DATE)
 			.time(reservationTime)
 			.theme(theme)
 			.member(member)
-			.status(ReservationStatus.RESERVATION.name())
+			.status(ReservationStatus.RESERVATION)
 			.build();
 
 		List<Reservation> reservations = List.of(reservation);
@@ -371,7 +374,7 @@ class ReservationServiceTests {
 		assertThat(searchReservations).allSatisfy((resultReservation) -> {
 			assertThat(resultReservation.name()).isEqualTo("tester");
 			assertThat(resultReservation.theme().id()).isEqualTo(1L);
-			assertThat(resultReservation.date()).isBetween("2024-06-01", "2024-06-30");
+			assertThat(resultReservation.date()).isBetween(dateFrom, dateTo);
 		});
 	}
 
@@ -396,6 +399,7 @@ class ReservationServiceTests {
 		assertThat(searchReservations).isEmpty();
 	}
 
+	@DisplayName("예약 대기 - 중복된 예약 대기는 할 수 없다.")
 	@Test
 	void createReservationWaiting() {
 		// given
@@ -405,7 +409,7 @@ class ReservationServiceTests {
 			.role(MemberRole.USER.name())
 			.build();
 
-		var reservationWaitingRequest = new ReservationWaitingRequest("2024-06-06", 1L, 1L);
+		var reservationWaitingRequest = new ReservationWaitingRequest(DataTimeFormatterUtils.TOMORROW_DATE, 1L, 1L);
 
 		var foundMember = Member.builder()
 			.id(1L)
@@ -422,17 +426,18 @@ class ReservationServiceTests {
 		var existingReservation = Reservation.builder()
 			.id(2L)
 			.name("anotherUser")
-			.date("2024-06-06")
+			.date(DataTimeFormatterUtils.TOMORROW_DATE)
 			.time(reservationTime)
 			.theme(theme)
 			.member(foundMember)
-			.status(ReservationStatus.RESERVATION.name())
+			.status(ReservationStatus.RESERVATION)
 			.build();
 
 		given(this.memberService.findByEmail("tester@gmail.com")).willReturn(foundMember);
 		given(this.reservationTimeService.getReservationTimeById(1L)).willReturn(reservationTime);
 		given(this.themeService.getThemeById(1L)).willReturn(theme);
-		given(this.reservationJpaRepository.findByDateAndTimeAndThemeId("2024-06-06", reservationTime, 1L))
+		given(this.reservationJpaRepository.findByDateAndTimeAndThemeId(DataTimeFormatterUtils.TOMORROW_DATE,
+				reservationTime, 1L))
 			.willReturn(List.of(existingReservation));
 		given(this.reservationJpaRepository.save(any())).willAnswer((invocation) -> {
 			Reservation reservation = invocation.getArgument(0);
@@ -449,6 +454,18 @@ class ReservationServiceTests {
 		assertThat(waitingResponse.memberId()).isEqualTo(foundMember.getId());
 		assertThat(waitingResponse.status()).isEqualTo(ReservationStatus.WAITING.name());
 		verify(this.reservationJpaRepository, times(1)).save(any(Reservation.class));
+
+		// given
+		given(this.reservationJpaRepository.existsByMemberAndDateAndTimeAndThemeAndStatus(foundMember.getId(),
+				DataTimeFormatterUtils.TOMORROW_DATE, reservationTime.getId(), 1L,
+				String.valueOf(ReservationStatus.WAITING)))
+			.willReturn(true);
+
+		// when, then
+		assertThatThrownBy(
+				() -> this.reservationService.createReservationWaiting(reservationWaitingRequest, loginMember))
+			.isInstanceOf(RoomEscapeException.class)
+			.hasMessage(ErrorCode.DUPLICATE_RESERVATION.getMessage());
 	}
 
 }

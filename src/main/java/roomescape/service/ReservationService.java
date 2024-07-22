@@ -75,7 +75,6 @@ public class ReservationService {
 		var date = createReservationRequest.getDate();
 		var themeId = createReservationRequest.getThemeId();
 
-		Reservation.checkReservationAvailability(date, reservationTime.getStartAt());
 		checkDuplicateReservation(date, themeId);
 
 		var theme = this.themeService.getThemeById(themeId);
@@ -87,7 +86,7 @@ public class ReservationService {
 			.date(date)
 			.time(reservationTime)
 			.theme(theme)
-			.status(reservationStatus.name())
+			.status(reservationStatus)
 			.member(createReservationRequest.getMember())
 			.build();
 
@@ -131,12 +130,17 @@ public class ReservationService {
 		var themeId = request.themeId();
 		var theme = this.themeService.getThemeById(themeId);
 
+		if (this.reservationJpaRepository.existsByMemberAndDateAndTimeAndThemeAndStatus(member.getId(), date,
+				reservationTime.getId(), themeId, String.valueOf(ReservationStatus.WAITING))) {
+			throw new RoomEscapeException(ErrorCode.DUPLICATE_RESERVATION);
+		}
+
 		var reservation = Reservation.builder()
 			.name(loginMember.getName())
 			.date(date)
 			.time(reservationTime)
 			.theme(theme)
-			.status(ReservationStatus.WAITING.name())
+			.status(ReservationStatus.WAITING)
 			.member(member)
 			.build();
 

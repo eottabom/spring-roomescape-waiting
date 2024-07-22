@@ -6,6 +6,6 @@ public record WaitingResponse(long id, long memberId, long timeId, long themeId,
 
 	public static WaitingResponse from(Reservation reservation, long memberId) {
 		return new WaitingResponse(reservation.getId(), memberId, reservation.getTime().getId(),
-				reservation.getTheme().getId(), reservation.getDate(), reservation.getStatus());
+				reservation.getTheme().getId(), reservation.getDate(), reservation.getStatus().name());
 	}
 }

@@ -7,7 +7,7 @@ public record ReservationsMineResponse(long reservationId, String themeName, Str
 
 	public static ReservationsMineResponse from(Reservation reservation, long waitingOrder) {
 		return new ReservationsMineResponse(reservation.getId(), reservation.getTheme().getName(), reservation.getDate(),
-				reservation.getTime().getStartAt(), ReservationStatus.fromStatus(reservation.getStatus()), waitingOrder);
+				reservation.getTime().getStartAt(), ReservationStatus.fromStatus(reservation.getStatus().name()), waitingOrder);
 	}
 
 }

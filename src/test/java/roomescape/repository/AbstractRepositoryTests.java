@@ -81,7 +81,7 @@ public abstract class AbstractRepositoryTests {
 			.date("2024-06-06")
 			.time(reservationTime)
 			.theme(theme)
-			.status(ReservationStatus.RESERVATION.name())
+			.status(ReservationStatus.RESERVATION)
 			.member(member)
 			.build();
 

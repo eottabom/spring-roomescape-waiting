@@ -38,7 +38,7 @@ public class Reservation {
 	@JoinColumn(name = "member_id")
 	private Member member;
 
-	private String status;
+	private ReservationStatus status;
 
 	public static Builder builder() {
 		return new Builder();
@@ -72,11 +72,11 @@ public class Reservation {
 		return this.member;
 	}
 
-	public String getStatus() {
+	public ReservationStatus getStatus() {
 		return this.status;
 	}
 
-	public static void checkReservationAvailability(String date, String time) {
+	private static void checkReservationAvailability(String date, String time) {
 		LocalDate reservationDate = LocalDate.parse(date);
 		LocalTime reservationTime = LocalTime.parse(time, DateTimeFormatter.ofPattern("HH:mm"));
 
@@ -156,12 +156,13 @@ public class Reservation {
 			return this;
 		}
 
-		public Builder status(String status) {
+		public Builder status(ReservationStatus status) {
 			this.reservation.status = status;
 			return this;
 		}
 
 		public Reservation build() {
+			checkReservationAvailability(this.reservation.date, this.reservation.time.getStartAt());
 			return this.reservation;
 		}
 
