@@ -31,7 +31,12 @@ public class MemberService {
 	@Transactional
 	public MemberResponse create(MemberRequest request) {
 		var encodedPassword = this.passwordEncoder.encode(request.password());
-		var member = Member.builder().name(request.name()).email(request.email()).password(encodedPassword).build();
+		var member = Member.builder()
+			.name(request.name())
+			.email(request.email())
+			.role(MemberRole.USER.name())
+			.password(encodedPassword)
+			.build();
 
 		var isExists = this.memberJpaRepository.existsByName(request.name());
 		if (isExists) {
@@ -67,7 +72,7 @@ public class MemberService {
 	@Transactional(readOnly = true)
 	public Member findByEmail(String email) {
 		return this.memberJpaRepository.findByEmail(email)
-				.orElseThrow(() -> new RoomEscapeException(ErrorCode.NOT_FOUND_MEMBER));
+			.orElseThrow(() -> new RoomEscapeException(ErrorCode.NOT_FOUND_MEMBER));
 	}
 
 	private void checkPassword(String inputPassword, String storedPassword) {
