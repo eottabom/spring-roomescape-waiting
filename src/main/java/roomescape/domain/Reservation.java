@@ -76,6 +76,10 @@ public class Reservation {
 		return this.status;
 	}
 
+	public void setStatus(ReservationStatus status) {
+		this.status = status;
+	}
+
 	private static void checkReservationAvailability(String date, String time) {
 		LocalDate reservationDate = LocalDate.parse(date);
 		LocalTime reservationTime = LocalTime.parse(time, DateTimeFormatter.ofPattern("HH:mm"));

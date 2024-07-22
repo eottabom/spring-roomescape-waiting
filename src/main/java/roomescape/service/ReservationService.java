@@ -1,6 +1,7 @@
 package roomescape.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import roomescape.domain.LoginMember;
 import roomescape.domain.Reservation;
@@ -75,8 +76,6 @@ public class ReservationService {
 		var date = createReservationRequest.getDate();
 		var themeId = createReservationRequest.getThemeId();
 
-		checkDuplicateReservation(date, themeId);
-
 		var theme = this.themeService.getThemeById(themeId);
 		var reservationStatus = checkReservationExists(date, reservationTime, themeId) ? ReservationStatus.WAITING
 				: ReservationStatus.RESERVATION;
@@ -95,12 +94,6 @@ public class ReservationService {
 		return ReservationResponse.from(savedReservation, reservationTime, theme);
 	}
 
-	private void checkDuplicateReservation(String date, long themeId) {
-		if (this.reservationJpaRepository.isDuplicateReservation(date, themeId)) {
-			throw new RoomEscapeException(ErrorCode.DUPLICATE_RESERVATION);
-		}
-	}
-
 	private boolean checkReservationExists(String date, ReservationTime time, Long themeId) {
 		List<Reservation> existsReservations = this.reservationJpaRepository.findByDateAndTimeAndThemeId(date, time,
 				themeId);
@@ -114,6 +107,12 @@ public class ReservationService {
 			throw new RoomEscapeException(ErrorCode.NOT_FOUND_RESERVATION);
 		}
 		this.reservationJpaRepository.deleteById(id);
+
+		Optional<Reservation> earliestReservation = this.reservationJpaRepository.findEarliestWaitingReservation();
+		earliestReservation.ifPresent((reservation) -> {
+			reservation.setStatus(ReservationStatus.RESERVATION);
+			this.reservationJpaRepository.save(reservation);
+		});
 	}
 
 	@Transactional(readOnly = true)

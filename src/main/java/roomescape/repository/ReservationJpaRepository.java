@@ -1,6 +1,7 @@
 package roomescape.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import roomescape.domain.Reservation;
 import roomescape.domain.ReservationStatus;
@@ -59,5 +60,8 @@ public interface ReservationJpaRepository extends JpaRepository<Reservation, Lon
 			""")
 	boolean existsByMemberAndDateAndTimeAndThemeAndStatus(@Param("memberId") Long memberId, @Param("date") String date,
 			@Param("timeId") Long timeId, @Param("themeId") Long themeId, @Param("status") ReservationStatus status);
+
+	@Query("SELECT r FROM Reservation r WHERE r.status = roomescape.domain.ReservationStatus.WAITING ORDER BY r.date, r.time.startAt ASC")
+	Optional<Reservation> findEarliestWaitingReservation();
 
 }
