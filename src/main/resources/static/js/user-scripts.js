@@ -3,7 +3,9 @@ document.addEventListener('DOMContentLoaded', function () {
         updateUIBasedOnLogin();
     }
     const form = document.getElementById('signup-form');
-    form.addEventListener('submit', register);
+    if (form) {
+        form.addEventListener('submit', register);
+    }
 });
 
 document.getElementById('logout-btn').addEventListener('click', function (event) {
@@ -108,6 +110,7 @@ function signup() {
 }
 
 function register(event) {
+    event.preventDefault();
   // 폼 데이터 수집
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
@@ -151,8 +154,6 @@ function register(event) {
         console.error('Error during signup:', error);
       });
 
-  // 폼 제출에 의한 페이지 리로드 방지
-  event.preventDefault();
 }
 
 function base64DecodeUnicode(str) {
